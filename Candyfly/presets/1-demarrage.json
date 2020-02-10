@@ -1,0 +1,49 @@
+{
+  "axes": [
+    true,
+    false,
+    false,
+    true
+  ],
+  "commentaires": "Contrôle vertical et horizontal avec mode discret.",
+  "horizontal": 0.5,
+  "vertical": 0.5,
+  "rotation": 90.0,
+  "mode": "discret",
+  "calibration": {
+    "up": [
+      0.0,
+      1.0
+    ],
+    "down": [
+      0.0,
+      1.0
+    ],
+    "clock": [
+      0.0,
+      1.0
+    ],
+    "anticlock": [
+      0.0,
+      1.0
+    ],
+    "front": [
+      0.0,
+      1.0
+    ],
+    "back": [
+      0.0,
+      1.0
+    ],
+    "right": [
+      0.0,
+      1.0
+    ],
+    "left": [
+      0.0,
+      1.0
+    ]
+  },
+  "discrete_threshold": 0.5,
+  "discrete_duration": 1005.78
+}
