@@ -8,6 +8,8 @@ from serial.tools.list_ports import comports
 
 import cflib.crtp
 
+
+# TODO: this is a test file for pyintaller with all dependecies
 # Initialize the low-level drivers (don't list the debug drivers)
 cflib.crtp.init_drivers(enable_debug_driver=False)
 

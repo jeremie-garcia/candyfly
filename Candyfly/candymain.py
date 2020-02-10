@@ -170,6 +170,7 @@ class CandyFly(QApplication):
                                                    "JSON Files (*.json)")
         if file_name:
             self.save_current_params_in_file(file_name)
+            self.candyWin.set_current_preset(os.path.basename(file_name))
 
     def save_current_params_in_file(self, file):
         if file is not None:

@@ -74,6 +74,7 @@ class ArduinoController(QObject):
     def stop(self):
         self.connection.emit(False)
         self.timer.stop()
+        self.thread.stop()
         self.arduino.close()
         self.alive = False
 
@@ -82,3 +83,4 @@ class ArduinoController(QObject):
         self.connection.emit(True)
         self.timer.start(self.update_in_millis)
         self.thread.start()
+        self.arduino = Serial(port=self.arduino_port, baudrate=9600, timeout=0.2)
