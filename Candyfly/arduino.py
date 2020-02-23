@@ -9,7 +9,7 @@ def find_available_arduinos():
     arduino_ports = [
         p.device
         for p in comports()
-        if ("usb" or "tty" or "arduino") in str(p.device).lower()
+        if (("usb" or "tty" or "arduino") in str(p.device).lower()) or ("arduino" in str(p.description).lower())
     ]
     return arduino_ports
 

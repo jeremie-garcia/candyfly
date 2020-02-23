@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QApplication, QFileDialog
 
 from candygui import CandyWin
 from arduino import *
-from drone import *
+from crazydrone import *
 from frsky import *
 
 FRSKY_ARDUINO_SAFETY_INDEX = 2
