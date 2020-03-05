@@ -741,6 +741,7 @@ class PresetStrip(QGraphicsRectItem):
         self.clear_view()
         vert_pos = 20
 
+        files = []
         for root, dirs, files in os.walk(path, topdown=True):
             files = [f for f in files if (f.endswith(".json") and not f.startswith("."))]
             files.sort()
@@ -754,9 +755,11 @@ class PresetStrip(QGraphicsRectItem):
                 vert_pos += 20
         if self.current_preset:
             self.win.presetChanged.emit(self.current_preset)
-        else:
+        elif len(files) > 0:
             print("opening " + files[0])
             self.win.presetChanged.emit(files[0])
+        else :
+            print("no presets available")
 
     def set_current(self, file):
         self.current_preset = file
