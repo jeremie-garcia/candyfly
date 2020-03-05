@@ -121,7 +121,7 @@ class CrazyDrone(Drone):
             velocity_yaw = _rotate * self.max_rotation_speed
             velocity_x = _front * self.max_horiz_speed
             velocity_y = - _right * self.max_horiz_speed
-            #print("PRE", velocity_x, velocity_y, velocity_z, velocity_yaw)
+            # print("PRE", velocity_x, velocity_y, velocity_z, velocity_yaw)
 
             # protect against collision by reducing speed depending on distance
             ranger = self.multiranger
@@ -146,6 +146,6 @@ class CrazyDrone(Drone):
                 velocity_z = velocity_z * (ranger.up - ANTI_COLLISION_MIN_DIST) / ANTI_COLLISION_DISTANCE
                 velocity_z = max(0, velocity_z)
 
-            #print("POST", velocity_x, velocity_y, velocity_z, velocity_yaw)
+            # print("POST", velocity_x, velocity_y, velocity_z, velocity_yaw)
             if self.motion_commander._is_flying:
                 self.motion_commander._set_vel_setpoint(velocity_x, velocity_y, velocity_z, velocity_yaw)

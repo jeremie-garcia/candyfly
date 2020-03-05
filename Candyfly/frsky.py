@@ -6,6 +6,7 @@ from pygame import joystick
 pygame.init()
 joystick.init()
 
+
 def find_available_frsky_ids():
     pygame.init()
     if joystick.get_init():
@@ -16,13 +17,13 @@ def find_available_frsky_ids():
     for i in range(joystick.get_count()):
         print(joystick.Joystick(i).get_name().lower())
 
-
     frsky_ids = [
-            i
-            for i in range(joystick.get_count())
-            if ("frsky") in joystick.Joystick(i).get_name().lower()
-            ]
+        i
+        for i in range(joystick.get_count())
+        if ("frsky") in joystick.Joystick(i).get_name().lower()
+    ]
     return frsky_ids
+
 
 class FrSky(QObject):
     values = pyqtSignal(float, float, float, float)
@@ -79,7 +80,8 @@ class FrSky(QObject):
 
         else:
             # fire events only if value changed
-            if self.prevAxesValues[0] != self.axesValues[0] or self.prevAxesValues[3] != self.axesValues[3] or self.prevAxesValues[1] != self.axesValues[1] or self.prevAxesValues[2] != self.axesValues[2]:
+            if self.prevAxesValues[0] != self.axesValues[0] or self.prevAxesValues[3] != self.axesValues[3] or \
+                    self.prevAxesValues[1] != self.axesValues[1] or self.prevAxesValues[2] != self.axesValues[2]:
                 self.prevAxesValues[3] = self.axesValues[3]
                 self.prevAxesValues[0] = self.axesValues[0]
                 self.prevAxesValues[1] = self.axesValues[1]
@@ -98,8 +100,9 @@ class FrSky(QObject):
         self.timer.start(self.update_in_millis)
         self.connection.emit(True)
 
+
 @pyqtSlot(float, float, float, float)
-def value_updated( x, y, x2, y2):
+def value_updated(x, y, x2, y2):
     '''slot to listen to the stick values, index, x, y'''
     print(x, y, x2, y2)
 
@@ -108,6 +111,7 @@ def value_updated( x, y, x2, y2):
 def button_updated(id, value, tag):
     '''slot to listen to the button values, index, state'''
     print(id, value, tag)
+
 
 if __name__ == "__main__":
     import sys

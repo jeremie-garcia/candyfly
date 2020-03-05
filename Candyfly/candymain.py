@@ -10,8 +10,8 @@ from arduino import *
 from crazydrone import *
 from frsky import *
 
-FRSKY_ARDUINO_SAFETY_INDEX = 2
-FRSKY_LAND_TAKE_OFF_INDEX = 4
+FRSKY_ARDUINO_SAFETY_INDEX = 4
+FRSKY_LAND_TAKE_OFF_INDEX = 3
 
 
 def scale_value(_val, _positive_params, _negative_params):
@@ -114,13 +114,13 @@ class CandyFly(QApplication):
         _rotate = self.discrete_motion_values[1]
         _front = self.discrete_motion_values[2]
         _right = self.discrete_motion_values[3]
-        #print("Discrete Motion Command: ", _up, _rotate, _front, _right)
+        # print("Discrete Motion Command: ", _up, _rotate, _front, _right)
         if not self.drone is None:
             self.drone.process_motion(_up, _rotate, _front, _right)
 
     def process_discrete_motion(self, _up, _rotate, _front, _right):
         # detecting clicks with states
-        #print("Discrete Motion Command PRE: ", _up, _rotate, _front, _right)
+        # print("Discrete Motion Command PRE: ", _up, _rotate, _front, _right)
         self.process_discrete_motion_for_axis(0, _up)
         self.process_discrete_motion_for_axis(1, _rotate)
         self.process_discrete_motion_for_axis(2, _front)

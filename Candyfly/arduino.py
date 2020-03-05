@@ -62,7 +62,7 @@ class ArduinoController(QObject):
                         self.sensorsValues[1] != self.prevSensorsValues[1] or
                         self.sensorsValues[2] != self.prevSensorsValues[2] or
                         self.sensorsValues[3] != self.prevSensorsValues[3]
-                    ):
+                ):
                     self.sensors.emit(self.sensorsValues[0], self.sensorsValues[1], self.sensorsValues[2],
                                       self.sensorsValues[3])
 
@@ -74,7 +74,7 @@ class ArduinoController(QObject):
     def stop(self):
         self.connection.emit(False)
         self.timer.stop()
-        #self.thread.stop()
+        # self.thread.stop()
         self.arduino.close()
         self.alive = False
 

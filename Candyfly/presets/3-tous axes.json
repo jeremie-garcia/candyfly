@@ -1,5 +1,10 @@
 {
-  "axes": [1, 1, 1, 1],
+  "axes": [
+    1,
+    1,
+    1,
+    1
+  ],
   "horizontal": 1,
   "vertical": 1,
   "rotation": 90,

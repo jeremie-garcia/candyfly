@@ -134,7 +134,7 @@ if __name__ == "__main__":
         '''slot to listen to the stick values, index, x, y'''
         if success:
             yaw = 20 * x
-            if easy :
+            if easy:
                 yaw = 0
 
             vertical_movement = 20 * y

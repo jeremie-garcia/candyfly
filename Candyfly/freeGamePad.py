@@ -2,9 +2,6 @@ import pygame
 from PyQt5.QtCore import pyqtSignal, QObject, QTimer, pyqtSlot
 from pygame import joystick
 
-# init py-game and Joystick lib
-
-
 
 def find_available_free_ids():
     pygame.init()
@@ -17,11 +14,12 @@ def find_available_free_ids():
         print(joystick.Joystick(i).get_name().lower())
 
     frsky_ids = [
-            i
-            for i in range(joystick.get_count())
-            if ("joystick") in joystick.Joystick(i).get_name().lower()
-            ]
+        i
+        for i in range(joystick.get_count())
+        if ("joystick") in joystick.Joystick(i).get_name().lower()
+    ]
     return frsky_ids
+
 
 class FreeGamePad(QObject):
     values = pyqtSignal(float, float, float, float)
@@ -70,10 +68,9 @@ class FreeGamePad(QObject):
         for i in range(self.buttons_count):
             self.buttonsValues[i] = self.stick.get_button(i)
 
-        #update y axis (reversed)
+        # update y axis (reversed)
         self.axesValues[1] = - self.axesValues[1]
         self.axesValues[3] = - self.axesValues[3]
-
 
         # fire events in streaming conditions
         if self.stream:
@@ -83,7 +80,8 @@ class FreeGamePad(QObject):
 
         else:
             # fire events only if value changed
-            if self.prevAxesValues[0] != self.axesValues[0] or self.prevAxesValues[3] != self.axesValues[3] or self.prevAxesValues[1] != self.axesValues[1] or self.prevAxesValues[2] != self.axesValues[2]:
+            if self.prevAxesValues[0] != self.axesValues[0] or self.prevAxesValues[3] != self.axesValues[3] or \
+                    self.prevAxesValues[1] != self.axesValues[1] or self.prevAxesValues[2] != self.axesValues[2]:
                 self.prevAxesValues[3] = self.axesValues[3]
                 self.prevAxesValues[0] = self.axesValues[0]
                 self.prevAxesValues[1] = self.axesValues[1]
@@ -102,8 +100,9 @@ class FreeGamePad(QObject):
         self.timer.start(self.update_in_millis)
         self.connection.emit(True)
 
+
 @pyqtSlot(float, float, float, float)
-def value_updated( x, y, x2, y2):
+def value_updated(x, y, x2, y2):
     '''slot to listen to the stick values, index, x, y'''
     print(x, y, x2, y2)
 
@@ -112,6 +111,7 @@ def value_updated( x, y, x2, y2):
 def button_updated(id, value, tag):
     '''slot to listen to the button values, index, state'''
     print(id, value, tag)
+
 
 if __name__ == "__main__":
     import sys
@@ -125,13 +125,7 @@ if __name__ == "__main__":
     gamepad.values.connect(value_updated)
     gamepad.buttons.connect(button_updated)
 
-
-
-
     gamepad.start()
-
-
-
 
     app.aboutToQuit.connect(gamepad.stop)
     sys.exit(app.exec_())
