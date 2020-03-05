@@ -1,12 +1,13 @@
 from time import sleep
 
-from drone import Drone
+from drone import *
 import cflib.crtp
 from cflib.crazyflie import Crazyflie
 from cflib.crazyflie.log import LogConfig
 from cflib.positioning.motion_commander import MotionCommander
 from cflib.utils.multiranger import Multiranger
 
+cflib.crtp.init_drivers(enable_debug_driver=False)
 
 def find_available_drones():
     return cflib.crtp.scan_interfaces()
@@ -16,9 +17,6 @@ class CrazyDrone(Drone):
 
     def __init__(self, link_uri):
         super().__init__()
-
-        # Initialize the low-level drivers (don't list the debug drivers)
-        cflib.crtp.init_drivers(enable_debug_driver=False)
 
         self._cf = Crazyflie(rw_cache='./cache')
         self.motion_commander = None

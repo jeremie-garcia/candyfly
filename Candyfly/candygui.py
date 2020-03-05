@@ -14,6 +14,7 @@ FG_COL = Qt.lightGray
 ON_COL = Qt.darkGreen
 
 FG_PEN = QPen(FG_COL)
+BG_PEN = QPen(BG_COL)
 ON_PEN = QPen(Qt.green)
 OFF_PEN = QPen(Qt.red)
 
@@ -247,8 +248,8 @@ class VerticalAxis(QGraphicsPolygonItem):
         self.setPen(ON_PEN)
 
         self.value_point = QGraphicsEllipseItem(width / 2 - 5, height / 2 - 5, 10, 10)
-        self.value_point.setPen(FG_PEN)
-        self.value_point.setBrush(BG_COL)
+        self.value_point.setPen(BG_PEN)
+        self.value_point.setBrush(FG_COL)
         self.value_point.setParentItem(self)
         self.value_point.setZValue(10)
 

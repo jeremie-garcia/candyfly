@@ -247,8 +247,9 @@ class CandyFly(QApplication):
             self.drone.stop()
 
         available = find_available_drones()
+        print("Available drones " + str(available))
         if len(available) > 0:
-            self.drone = Drone(available[0][0])
+            self.drone = CrazyDrone(available[0][0])
 
             # init values
             self.drone.set_max_horizontal_speed(self.candyWin.get_max_horiz_speed())
