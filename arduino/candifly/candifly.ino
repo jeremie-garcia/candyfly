@@ -13,25 +13,30 @@ void setup() {
 }
 
 void loop() {
-  fsrReadingUp = analogRead(1);
   fsrReadingDown = analogRead(0);
-  fsrReadingRight = analogRead(3);
-  fsrReadingLeft = analogRead(2);
-  
-  Serial.print(fsrReadingUp);
-  Serial.print(" ");
+  fsrReadingUp = analogRead(1);
+  fsrReadingYaw_no_clock = analogRead(2);
+  fsrReadingYaw_clock= analogRead(3);
+  fsrReadingBack = analogRead(4);
+  fsrReadingFront = analogRead(5);
+  fsrReadingLeft = analogRead(6);
+  fsrReadingRight = analogRead(7);
+
   Serial.print(fsrReadingDown);
   Serial.print(" ");
-  Serial.print(fsrReadingYaw_clock);
+  Serial.print(fsrReadingUp);
   Serial.print(" ");
   Serial.print(fsrReadingYaw_no_clock);
   Serial.print(" ");
-  Serial.print(fsrReadingFront);
+  Serial.print(fsrReadingYaw_clock);
   Serial.print(" ");
   Serial.print(fsrReadingBack);
   Serial.print(" ");
-  Serial.print(fsrReadingRight); 
+  Serial.print(fsrReadingFront);
   Serial.print(" ");
   Serial.print(fsrReadingLeft);
+  Serial.print(" ");
+  Serial.print(fsrReadingRight);
   Serial.println("");
+
 }

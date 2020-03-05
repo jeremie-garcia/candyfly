@@ -3,8 +3,8 @@ from PyQt5.QtCore import pyqtSignal, QObject, QTimer, pyqtSlot
 from pygame import joystick
 
 # init py-game and Joystick lib
-
-
+pygame.init()
+joystick.init()
 
 def find_available_frsky_ids():
     pygame.init()
@@ -12,6 +12,11 @@ def find_available_frsky_ids():
         joystick.quit()
 
     joystick.init()
+
+    for i in range(joystick.get_count()):
+        print(joystick.Joystick(i).get_name().lower())
+
+
     frsky_ids = [
             i
             for i in range(joystick.get_count())
@@ -111,10 +116,12 @@ if __name__ == "__main__":
     app = QCoreApplication([])
     stream = False
     refresh_duration_in_millis = 50
-    find_available_frsky_ids()
-    gamepad = FrSky(stream, refresh_duration_in_millis, 0)
-    gamepad.values.connect(value_updated)
-    gamepad.buttons.connect(button_updated)
-    gamepad.start()
-    app.aboutToQuit.connect(gamepad.stop)
-    sys.exit(app.exec_())
+    joysticks = find_available_frsky_ids()
+    print(joysticks)
+    if (len(joysticks) > 0):
+        gamepad = FrSky(stream, refresh_duration_in_millis, joysticks[0])
+        gamepad.values.connect(value_updated)
+        gamepad.buttons.connect(button_updated)
+        gamepad.start()
+        app.aboutToQuit.connect(gamepad.stop)
+        sys.exit(app.exec_())

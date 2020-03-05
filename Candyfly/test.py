@@ -48,5 +48,5 @@ def find_available_arduinos():
         ]
     return arduino_ports
 
-text.setText(str(find_available_drones()))
+text.setText(str(find_available_arduinos()))
 app.exec()

@@ -42,10 +42,10 @@ class ArduinoController(QObject):
                         data_string = data.decode("utf8")
                         datas = data_string.split()
                         if len(datas) == 8:
-                            self.sensorsValues[0] = (int(datas[0]) - int(datas[1])) / 1024
-                            self.sensorsValues[1] = (int(datas[2]) - int(datas[3])) / 1024
-                            self.sensorsValues[2] = (int(datas[4]) - int(datas[5])) / 1024
-                            self.sensorsValues[3] = (int(datas[6]) - int(datas[7])) / 1024
+                            self.sensorsValues[0] = (int(datas[1]) - int(datas[0])) / 1024
+                            self.sensorsValues[1] = (int(datas[3]) - int(datas[2])) / 1024
+                            self.sensorsValues[2] = (int(datas[5]) - int(datas[4])) / 1024
+                            self.sensorsValues[3] = (int(datas[7]) - int(datas[6])) / 1024
                         else:
                             print('not enough data, needs 8 arguments')
                 except(SerialException):
@@ -74,7 +74,7 @@ class ArduinoController(QObject):
     def stop(self):
         self.connection.emit(False)
         self.timer.stop()
-        self.thread.stop()
+        #self.thread.stop()
         self.arduino.close()
         self.alive = False
 

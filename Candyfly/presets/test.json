@@ -1,0 +1,49 @@
+{
+  "axes": [
+    true,
+    true,
+    true,
+    true
+  ],
+  "commentaires": "Presets pour débuter",
+  "horizontal": 1.0,
+  "vertical": 1.0,
+  "rotation": 90.0,
+  "mode": "continu",
+  "calibration": {
+    "up": [
+      0.0,
+      1.0
+    ],
+    "down": [
+      0.0,
+      1.0
+    ],
+    "clock": [
+      0.0,
+      1.0
+    ],
+    "anticlock": [
+      0.0,
+      1.0
+    ],
+    "front": [
+      0.0,
+      1.0
+    ],
+    "back": [
+      0.0,
+      1.0
+    ],
+    "right": [
+      0.0,
+      1.0
+    ],
+    "left": [
+      0.0,
+      1.0
+    ]
+  },
+  "discrete_threshold": 0.5,
+  "discrete_duration": 1000.0
+}
