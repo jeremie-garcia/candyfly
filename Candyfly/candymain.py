@@ -74,7 +74,7 @@ class CandyFly(QApplication):
         self.candyWin.discrete_duration_changed.connect(self.update_discrete_duration)
 
         # load presets
-        script_dir = os.path.dirname(os.path.realpath(__file__))
+        script_dir = self.get_script_dir()
         self.presets_path = script_dir + os.path.sep + 'presets'
         self.candyWin.presetStrip.populate_presets(self.presets_path)
 
@@ -149,22 +149,32 @@ class CandyFly(QApplication):
             self.frsky.stop()
 
     def set_icon(self):
-        script_dir = os.path.dirname(os.path.realpath(__file__))
+        script_dir = self.get_script_dir()
         icon_path = script_dir + os.path.sep + 'img' + os.path.sep + 'icon.png'
         self.setWindowIcon(QIcon(icon_path))
 
+    def get_script_dir(self):
+
+        if getattr(sys, 'frozen', False):
+            # TODO: test on other platforms (windows mostly)
+            return os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(sys.executable))))
+        else:
+            return os.path.dirname(os.path.realpath(__file__))
+
     def load_params_from_file(self, file):
         if file is not None:
-            script_dir = os.path.dirname(os.path.realpath(__file__))
+            script_dir = self.get_script_dir()
             json_file_path = script_dir + os.path.sep + 'presets' + os.path.sep + file
             json_file = io.open(json_file_path, 'r', encoding='utf8')
             data = json.load(json_file)
             self.set_params(data)
             self.candyWin.set_current_preset(file)
+        else:
+            self.set_params(None)
 
     def save_as(self):
         # save as button
-        script_dir = os.path.dirname(os.path.realpath(__file__))
+        script_dir = self.get_script_dir()
         json_file_path = script_dir + os.path.sep + 'presets'
         file_name, _ = QFileDialog.getSaveFileName(self.candyWin, "Enregistrer sous", json_file_path,
                                                    "JSON Files (*.json)")

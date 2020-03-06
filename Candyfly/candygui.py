@@ -677,6 +677,7 @@ class PresetItem(QGraphicsTextItem):
     def __init(self, *args):
         super().__init__(*args)
         self.path = None
+        self.signal = None
 
     def set_path(self, _path):
         self.path = _path
