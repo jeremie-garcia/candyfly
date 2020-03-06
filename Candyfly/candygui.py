@@ -5,7 +5,7 @@ from PyQt5.QtGui import QColor, QPen, QBrush, QPainter, QFont, QPixmap, QIcon, Q
 from PyQt5.QtWidgets import QMainWindow, QGraphicsView, QGraphicsScene, QGraphicsTextItem, QGraphicsRectItem, \
     QGraphicsLineItem, QGraphicsEllipseItem, QSlider, QGraphicsProxyWidget, QGraphicsPixmapItem, QPushButton, \
     QGraphicsPolygonItem, QRadioButton, \
-    QButtonGroup, QTextEdit, QGraphicsItem
+    QButtonGroup, QTextEdit, QGraphicsItem, QAction
 
 from rangeslider import QRangeSlider
 
@@ -193,7 +193,7 @@ class CommandStrip(QGraphicsRectItem):
         self.discret.setPos(450, 95)
 
     def set_selected_control(self, _control):
-        print("controller", _control)
+        # print("controller", _control)
         if _control == "frsky":
             self.selected_control.setPos(0, 0)
         else:
@@ -206,7 +206,7 @@ class CommandStrip(QGraphicsRectItem):
             self.mode_discret.setChecked(True)
 
     def update_frsky_connection(self, is_connected):
-        print("connection ", is_connected)
+        # print("connection ", is_connected)
         if is_connected:
             self.frsky_led.setBrush(ON_BRUSH)
         else:
@@ -305,10 +305,14 @@ class RectSelector(QGraphicsRectItem):
         self.setZValue(8)
 
     def mousePressEvent(self, event):
+        active = True
+        if (self.axis1 and self.axis2 and (self.axis1.is_active() or self.axis2.is_active())):
+            #if any is active then switch off both
+            active = False
         if self.axis1:
-            self.axis1.set_active(not self.axis1.is_active())
+            self.axis1.set_active(active)
         if self.axis2:
-            self.axis2.set_active(not self.axis2.is_active())
+            self.axis2.set_active(active)
         self.parentItem().parentItem().update_activated_axis()
 
     def set_axis(self, _axis1, _axis2):
@@ -757,10 +761,11 @@ class PresetStrip(QGraphicsRectItem):
         if self.current_preset:
             self.win.presetChanged.emit(self.current_preset)
         elif len(files) > 0:
-            print("opening " + files[0])
+            # print("opening " + files[0])
             self.win.presetChanged.emit(files[0])
-        else :
-            print("no presets available")
+        else:
+            pass
+            # print("no presets available")
 
     def set_current(self, file):
         self.current_preset = file
