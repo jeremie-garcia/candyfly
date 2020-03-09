@@ -1,3 +1,5 @@
+import os
+import sys
 from time import sleep
 
 from drone import *
@@ -18,7 +20,11 @@ class CrazyDrone(Drone):
     def __init__(self, link_uri):
         super().__init__()
 
-        self._cf = Crazyflie(rw_cache='./cache')
+        cache = "./cache"
+        if getattr(sys, 'frozen', False):
+            cache = sys._MEIPASS + os.path.sep + "cache"
+
+        self._cf = Crazyflie(rw_cache=cache)
         self.motion_commander = None
         self.multiranger = None
 

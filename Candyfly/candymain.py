@@ -15,7 +15,7 @@ FRSKY_LAND_TAKE_OFF_INDEX = 3
 
 
 def scale_value(_val, _positive_params, _negative_params):
-    '''Scaling function to remap inputs within defined range'''
+    """Scaling function to remap inputs within defined range"""
     is_positive = (_val >= 0)
     _params = _positive_params if is_positive else _negative_params
 
@@ -43,11 +43,11 @@ class CandyFly(QApplication):
         self.set_icon()
         self.candyWin.show()
 
-        exitAction = QAction('Quit', self)
-        exitAction.triggered.connect(self.quit)
+        exit_action = QAction('Quit', self)
+        exit_action.triggered.connect(self.quit)
         menubar = self.candyWin.menuBar()
-        fileMenu = menubar.addMenu('File')
-        fileMenu.addAction(exitAction)
+        file_menu = menubar.addMenu('File')
+        file_menu.addAction(exit_action)
 
         self.drone = None
         self.arduino = None
@@ -262,7 +262,7 @@ class CandyFly(QApplication):
             self.drone.stop()
 
         available = find_available_drones()
-        #print("Available drones " + str(available))
+        # print("Available drones " + str(available))
         if len(available) > 0:
             self.drone = CrazyDrone(available[0][0])
 
@@ -279,7 +279,7 @@ class CandyFly(QApplication):
             self.candyWin.rotationSpeedValueChanged.connect(self.drone.set_max_rotation_speed)
         else:
             self.drone = None
-            #print('No Crazyflies found, Refresh')
+            # print('No Crazyflies found, Refresh')
 
     def init_arduino(self):
         if self.arduino:
@@ -292,7 +292,7 @@ class CandyFly(QApplication):
             self.arduino.start()
         else:
             self.arduino = None
-            #print('No Arduino found, Refresh')
+            # print('No Arduino found, Refresh')
 
     def init_frsky(self):
         if self.frsky:
@@ -306,7 +306,7 @@ class CandyFly(QApplication):
             self.frsky.start()
         else:
             self.frsky = None
-            #print('No FRSKY found, Refresh')
+            # print('No FRSKY found, Refresh')
 
     def update_calibration(self):
         calib = self.candyWin.get_calibration()
