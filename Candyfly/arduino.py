@@ -72,11 +72,13 @@ class ArduinoController(QObject):
             self.timer.run()
 
     def stop(self):
+        self.alive = False
         self.connection.emit(False)
         self.timer.stop()
         # self.thread.stop()
-        self.arduino.close()
-        self.alive = False
+        if self.arduino.isOpen():
+            self.arduino.close()
+
 
     def start(self):
         self.alive = True

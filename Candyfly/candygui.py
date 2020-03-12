@@ -1,7 +1,7 @@
 import os
 
 from PyQt5.QtCore import Qt, QPointF, pyqtSignal, QFileSystemWatcher
-from PyQt5.QtGui import QColor, QPen, QBrush, QPainter, QFont, QPixmap, QIcon, QPolygonF
+from PyQt5.QtGui import QColor, QPen, QBrush, QPainter, QFont, QPixmap, QIcon, QPolygonF, QTransform
 from PyQt5.QtWidgets import QMainWindow, QGraphicsView, QGraphicsScene, QGraphicsTextItem, QGraphicsRectItem, \
     QGraphicsLineItem, QGraphicsEllipseItem, QSlider, QGraphicsProxyWidget, QGraphicsPixmapItem, QPushButton, \
     QGraphicsPolygonItem, QRadioButton, \
@@ -34,7 +34,7 @@ IDLE_COL = QColor(FG_COL)
 IDLE_COL.setAlphaF(0.6)
 IDLE_BRUSH = QBrush(IDLE_COL)
 
-TOP_ANCHOR = 20
+TOP_ANCHOR = 0
 LEFT_ANCHOR = 0
 
 TITLE_FONT = QFont('Helvetica', 12)
@@ -67,7 +67,7 @@ class DroneStrip(QGraphicsRectItem):
         self.refresh.setStyleSheet(BUTTON_STYLE_SHEET)
         self.refresh.setIcon(QIcon(icon_path))
         self.proxy = _scene.addWidget(self.refresh)
-        self.proxy.setPos(275, 22)
+        self.proxy.setPos(275, TOP_ANCHOR + 2)
 
         QGraphicsLineItem(0, 20, 300, 20, self).setPen(FG_PEN)
 
@@ -149,7 +149,7 @@ class CommandStrip(QGraphicsRectItem):
         self.refresh.setStyleSheet(BUTTON_STYLE_SHEET)
         self.refresh.setIcon(QIcon(icon_path))
         self.proxy = _scene.addWidget(self.refresh)
-        self.proxy.setPos(575, 22)
+        self.proxy.setPos(575, TOP_ANCHOR + 2)
 
         line = QGraphicsLineItem(0, 20, 300, 20, self)
         line.setPen(FG_PEN)
@@ -187,10 +187,10 @@ class CommandStrip(QGraphicsRectItem):
         self.mode_discret.setStyleSheet(BUTTON_STYLE_SHEET)
 
         self.continu = _scene.addWidget(self.mode_continu)
-        self.continu.setPos(450, 75)
+        self.continu.setPos(450, TOP_ANCHOR + 55)
 
         self.discret = _scene.addWidget(self.mode_discret)
-        self.discret.setPos(450, 95)
+        self.discret.setPos(450, TOP_ANCHOR + 75)
 
     def set_selected_control(self, _control):
         # print("controller", _control)
@@ -504,7 +504,7 @@ class CommandViewer(QGraphicsRectItem):
         page_main.clicked.connect(self.view.display_main_page)
         self.main_button = page_main
         proxy = _scene.addWidget(page_main)
-        proxy.setPos(0, 480)
+        proxy.setPos(0, TOP_ANCHOR + 460)
 
         page_simple = QPushButton("SIMPLIFIE")
         page_simple.setStyleSheet(PAGE_BUTTON_STYLE_SHEET)
@@ -513,7 +513,7 @@ class CommandViewer(QGraphicsRectItem):
         page_simple.clicked.connect(self.view.display_simple_page)
         self.simple_button = page_simple
         proxy = _scene.addWidget(page_simple)
-        proxy.setPos(200, 480)
+        proxy.setPos(200, TOP_ANCHOR + 460)
 
         page_calibration = QPushButton("CALIBRATION")
         page_calibration.setStyleSheet(PAGE_BUTTON_STYLE_SHEET)
@@ -522,7 +522,7 @@ class CommandViewer(QGraphicsRectItem):
         page_calibration.clicked.connect(self.view.display_calibration_page)
         self.calibration_button = page_calibration
         proxy = _scene.addWidget(page_calibration)
-        proxy.setPos(400, 480)
+        proxy.setPos(400, TOP_ANCHOR + 460)
 
         self.selected_page = ""
         self.view.display_main_page()
@@ -712,7 +712,7 @@ class PresetStrip(QGraphicsRectItem):
         self.save_button = QPushButton(" Enregistrer Sous ")
         self.save_button.setStyleSheet(SAVE_BUTTON_STYLE_SHEET)
         self.proxy = self.win.scene.addWidget(self.save_button)
-        self.proxy.setPos(610, 430)
+        self.proxy.setPos(610, TOP_ANCHOR + 410)
         self.save_button.clicked.connect(self.win.saveAsked.emit)
 
         # add logos
@@ -828,7 +828,7 @@ class CandyWin(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setGeometry(0, 0, 820, 620)
-        self.setFixedSize(830, 630)
+        #self.setFixedSize(830, 630)
         self.setWindowTitle('Candifly')
 
         self.view = QGraphicsView()
@@ -836,6 +836,7 @@ class CandyWin(QMainWindow):
         self.view.setScene(self.scene)
         self.setCentralWidget(self.view)
         self.view.setRenderHint(QPainter.Antialiasing)
+        self.view.scale(1,1)
 
         self.scene.setBackgroundBrush(BG_COL)
 
@@ -862,7 +863,7 @@ class CandyWin(QMainWindow):
                                TOP_ANCHOR + self.commandViewer.boundingRect().height() + self.droneStrip.boundingRect().height())
         self.presetStrip.setPos(LEFT_ANCHOR + self.commandViewer.boundingRect().width(), TOP_ANCHOR)
         self.commentStrip.setPos(LEFT_ANCHOR + self.speedStrip.boundingRect().width(),
-                                 TOP_ANCHOR + + self.commandViewer.boundingRect().height() + self.droneStrip.boundingRect().height())
+                                 TOP_ANCHOR + self.commandViewer.boundingRect().height() + self.droneStrip.boundingRect().height())
 
         self.droneStrip.refresh.clicked.connect(self.refreshDroneAsked.emit)
         self.commandStrip.refresh.clicked.connect(self.refreshDeviceAsked.emit)

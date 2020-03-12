@@ -283,7 +283,9 @@ class CandyFly(QApplication):
 
     def init_arduino(self):
         if self.arduino:
+            self.arduino.connection.disconnect()
             self.arduino.stop()
+
         available = find_available_arduinos()
         if len(available) > 0:
             self.arduino = ArduinoController(available[0])

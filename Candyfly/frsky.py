@@ -1,10 +1,39 @@
 import pygame
 from PyQt5.QtCore import pyqtSignal, QObject, QTimer, pyqtSlot
 from pygame import joystick
+import sys
 
 # init py-game and Joystick lib
 pygame.init()
 joystick.init()
+
+config = None
+platform = None
+
+CONFIGS = {
+    "OSX": {
+        "LEFT_STICK_X": 3,
+        "LEFT_STICK_Y": 0,
+        "RIGHT_STICK_X": 2,
+        "RIGHT_STICK_Y": 1},
+    "LINUX": {
+        "LEFT_STICK_X": 0,
+        "LEFT_STICK_Y": 3,
+        "RIGHT_STICK_X": 2,
+        "RIGHT_STICK_Y": 1},
+    "WINDOWS": {
+        "LEFT_STICK_X": 5,
+        "LEFT_STICK_Y": 0,
+        "RIGHT_STICK_X": 2,
+        "RIGHT_STICK_Y": 1}
+}
+
+if sys.platform.startswith("lin"):
+    config = CONFIGS["LINUX"]
+elif sys.platform.startswith("darwin"):
+    config = CONFIGS["OSX"]
+elif sys.platform.startswith("win"):
+    config = CONFIGS["WINDOWS"]
 
 
 def find_available_frsky_ids():
@@ -36,7 +65,6 @@ class FrSky(QObject):
         self.stream = _stream
         self.running = False
         self.id = _id
-        self.buttonTags = ["SA", "SB", "SC", "SD", "SE", "SF", "SG", "SH"]
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.process)
@@ -74,19 +102,19 @@ class FrSky(QObject):
 
         # fire events in streaming conditions
         if self.stream:
-            self.values.emit(self.axesValues[0], self.axesValues[3], self.axesValues[2], self.axesValues[1])
+            self.values.emit(self.axesValues[config["LEFT_STICK_Y"]], self.axesValues[config["LEFT_STICK_X"]], self.axesValues[config["RIGHT_STICK_X"]], self.axesValues[config["RIGHT_STICK_Y"]])
             self.emit_button_for_index(0)
             self.emit_button_for_index(3)
 
         else:
             # fire events only if value changed
-            if self.prevAxesValues[0] != self.axesValues[0] or self.prevAxesValues[3] != self.axesValues[3] or \
-                    self.prevAxesValues[1] != self.axesValues[1] or self.prevAxesValues[2] != self.axesValues[2]:
-                self.prevAxesValues[3] = self.axesValues[3]
-                self.prevAxesValues[0] = self.axesValues[0]
-                self.prevAxesValues[1] = self.axesValues[1]
-                self.prevAxesValues[2] = self.axesValues[2]
-                self.values.emit(self.axesValues[0], self.axesValues[3], self.axesValues[2], self.axesValues[1])
+            if self.prevAxesValues[config["LEFT_STICK_X"]] != self.axesValues[config["LEFT_STICK_X"]] or self.prevAxesValues[config["LEFT_STICK_Y"]] != self.axesValues[config["LEFT_STICK_Y"]] or \
+                    self.prevAxesValues[config["RIGHT_STICK_X"]] != self.axesValues[config["RIGHT_STICK_X"]] or self.prevAxesValues[config["RIGHT_STICK_Y"]] != self.axesValues[config["RIGHT_STICK_Y"]]:
+                self.prevAxesValues[config["LEFT_STICK_Y"]] = self.axesValues[config["LEFT_STICK_Y"]]
+                self.prevAxesValues[config["LEFT_STICK_X"]] = self.axesValues[config["LEFT_STICK_X"]]
+                self.prevAxesValues[config["RIGHT_STICK_X"]] = self.axesValues[config["RIGHT_STICK_X"]]
+                self.prevAxesValues[config["RIGHT_STICK_Y"]] = self.axesValues[config["RIGHT_STICK_Y"]]
+                self.values.emit(self.axesValues[config["LEFT_STICK_Y"]], self.axesValues[config["LEFT_STICK_X"]], self.axesValues[config["RIGHT_STICK_X"]], self.axesValues[config["RIGHT_STICK_Y"]])
 
             for i in range(self.buttons_count):
                 if self.prevButtonsValues[i] != self.buttonsValues[i]:
