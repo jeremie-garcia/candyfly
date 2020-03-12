@@ -25,7 +25,7 @@ class ArduinoController(QObject):
         self.stream = _stream
         self.running = False
         self.arduino_port = _port
-        self.arduino = Serial(port=self.arduino_port, baudrate=9600, timeout=0.2)
+        self.arduino = None
         self.timer = QTimer()
         self.timer.timeout.connect(self.process)
         self.thread = Thread(target=self.readSerial, daemon=True)
@@ -73,16 +73,16 @@ class ArduinoController(QObject):
 
     def stop(self):
         self.alive = False
-        self.connection.emit(False)
         self.timer.stop()
-        # self.thread.stop()
+        self.thread.stop()
         if self.arduino.isOpen():
             self.arduino.close()
+        self.connection.emit(False)
 
 
     def start(self):
+        self.arduino = Serial(port=self.arduino_port, baudrate=9600, timeout=0.2)
         self.alive = True
-        self.connection.emit(True)
         self.timer.start(self.update_in_millis)
         self.thread.start()
-        self.arduino = Serial(port=self.arduino_port, baudrate=9600, timeout=0.2)
+        self.connection.emit(True)

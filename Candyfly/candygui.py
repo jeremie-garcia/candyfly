@@ -5,7 +5,7 @@ from PyQt5.QtGui import QColor, QPen, QBrush, QPainter, QFont, QPixmap, QIcon, Q
 from PyQt5.QtWidgets import QMainWindow, QGraphicsView, QGraphicsScene, QGraphicsTextItem, QGraphicsRectItem, \
     QGraphicsLineItem, QGraphicsEllipseItem, QSlider, QGraphicsProxyWidget, QGraphicsPixmapItem, QPushButton, \
     QGraphicsPolygonItem, QRadioButton, \
-    QButtonGroup, QTextEdit, QGraphicsItem, QAction
+    QButtonGroup, QTextEdit, QGraphicsItem, QAction, QHBoxLayout, QGraphicsWidget, QGraphicsLinearLayout
 
 from rangeslider import QRangeSlider
 
@@ -42,6 +42,7 @@ STRIP_FONT = QFont('Helvetica', 8)
 
 SLIDER_STYLE_SHEET = "background-color: transparent; border-style: outset; border-width: 2px; border-radius: 10px; " \
                      "border-color: beige; "
+SLIDER_STYLE_SHEET = ""
 BUTTON_STYLE_SHEET = "background-color: black; border-style: none;color:lightGray"
 TEXT_EDIT_STYLE_SHEET = "background-color: black; border-style: none; border-width: 0px; color:lightGray"
 SAVE_BUTTON_STYLE_SHEET = "background-color: black; border-style: outset; border-width: 1px; border-radius: 10px; " \
@@ -532,9 +533,9 @@ class CommandViewer(QGraphicsRectItem):
         self.calibration_button.setStyleSheet(PAGE_BUTTON_STYLE_SHEET)
         self.simple_button.setStyleSheet(PAGE_BUTTON_STYLE_SHEET)
         self.main_button.setStyleSheet(PAGE_BUTTON_STYLE_SHEET)
-        if page is "main":
+        if page == "main":
             self.main_button.setStyleSheet(ACTIVE_PAGE_BUTTON_STYLE_SHEET)
-        elif page is 'simple':
+        elif page == 'simple':
             self.simple_button.setStyleSheet(ACTIVE_PAGE_BUTTON_STYLE_SHEET)
         else:
             self.calibration_button.setStyleSheet(ACTIVE_PAGE_BUTTON_STYLE_SHEET)
@@ -827,7 +828,7 @@ class CandyWin(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setGeometry(0, 0, 820, 620)
+        self.setGeometry(0, 0, 860, 660)
         #self.setFixedSize(830, 630)
         self.setWindowTitle('Candifly')
 
