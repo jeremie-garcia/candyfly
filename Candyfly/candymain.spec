@@ -2,7 +2,6 @@
 
 block_cipher = None
 
-
 a = Analysis(['candymain.py'],
              pathex=['/Users/jeremiegarcia/Documents/dev/candyfly/Candyfly'],
              binaries=[],
@@ -17,24 +16,47 @@ a = Analysis(['candymain.py'],
              win_private_assemblies=False,
              cipher=block_cipher,
              noarchive=False)
+
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
-exe = EXE(pyz,
+
+
+# Generate an executable file for windows / linux
+if sys.platform == 'win32' or sys.platform == 'win64' or sys.platform == 'linux':
+    exe = EXE(pyz,
+            a.scripts,
+            a.binaries,
+            a.zipfiles,
+            a.datas,
+            name='Quaver',
+            debug=False,
+            strip=False,
+            upx=True,
+            runtime_tmpdir=None,
+            console=False,
+            icon='assets/icon.ico')
+
+# Generate an executable file for OSX
+if sys.platform == 'darwin':
+    exe = EXE(pyz,
           a.scripts,
           a.binaries,
           a.zipfiles,
           a.datas,
           [],
-          name='candymain',
+          name='CandyFly',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
           upx_exclude=[],
           runtime_tmpdir=None,
-          console=False )
+          console=False,
+          icon='img/candy.icns')
 
-app = BUNDLE(exe,
+# Generate an executable file for OSX (APP)
+if sys.platform == 'darwin':
+    app = BUNDLE(exe,
              name='CandyFly.app',
              icon='img/candy.icns',
              info_plist={
