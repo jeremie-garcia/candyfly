@@ -2,12 +2,13 @@ import os
 import sys
 from time import sleep
 
-from drone import *
 import cflib.crtp
 from cflib.crazyflie import Crazyflie
 from cflib.crazyflie.log import LogConfig
 from cflib.positioning.motion_commander import MotionCommander
 from cflib.utils.multiranger import Multiranger
+
+from drone import *
 
 cflib.crtp.init_drivers(enable_debug_driver=False)
 

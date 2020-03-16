@@ -1,12 +1,11 @@
 import io
 import json
-import os
 
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QFileDialog, QAction
 
-from candygui import CandyWin
 from arduino import *
+from candygui import CandyWin
 from crazydrone import *
 from frsky import *
 
@@ -121,7 +120,7 @@ class CandyFly(QApplication):
         _front = self.discrete_motion_values[2]
         _right = self.discrete_motion_values[3]
         # print("Discrete Motion Command: ", _up, _rotate, _front, _right)
-        if not self.drone is None:
+        if self.drone is not None:
             self.drone.process_motion(_up, _rotate, _front, _right)
 
     def process_discrete_motion(self, _up, _rotate, _front, _right):
@@ -162,7 +161,10 @@ class CandyFly(QApplication):
     def get_script_dir(self):
         if getattr(sys, 'frozen', False):
             # TODO: test on other platforms (windows mostly)
-            return os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(sys.executable))))
+            if sys.platform == 'win32' or sys.platform == 'win64' or sys.platform == 'linux':
+                return os.path.dirname(sys.executable)
+            else:
+                return os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(sys.executable))))
         else:
             return os.path.dirname(os.path.realpath(__file__))
 

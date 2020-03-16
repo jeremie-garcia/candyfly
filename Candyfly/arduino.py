@@ -1,7 +1,8 @@
+from threading import Thread
+
+from PyQt5.QtCore import pyqtSignal, QObject, QTimer
 from serial import Serial, SerialException
 from serial.tools.list_ports import comports
-from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot, QTimer
-from threading import Thread
 
 
 def find_available_arduinos():

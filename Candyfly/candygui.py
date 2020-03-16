@@ -1,11 +1,11 @@
 import os
 
 from PyQt5.QtCore import Qt, QPointF, pyqtSignal, QFileSystemWatcher
-from PyQt5.QtGui import QColor, QPen, QBrush, QPainter, QFont, QPixmap, QIcon, QPolygonF, QTransform
+from PyQt5.QtGui import QColor, QPen, QBrush, QPainter, QFont, QPixmap, QIcon, QPolygonF
 from PyQt5.QtWidgets import QMainWindow, QGraphicsView, QGraphicsScene, QGraphicsTextItem, QGraphicsRectItem, \
     QGraphicsLineItem, QGraphicsEllipseItem, QSlider, QGraphicsProxyWidget, QGraphicsPixmapItem, QPushButton, \
     QGraphicsPolygonItem, QRadioButton, \
-    QButtonGroup, QTextEdit, QGraphicsItem, QAction, QHBoxLayout, QGraphicsWidget, QGraphicsLinearLayout
+    QButtonGroup, QTextEdit, QGraphicsItem
 
 from rangeslider import QRangeSlider
 

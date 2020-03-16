@@ -1,5 +1,6 @@
-from drone import Drone
 from pyparrot.Bebop import Bebop
+
+from drone import Drone
 
 
 class ARDrone(Drone):

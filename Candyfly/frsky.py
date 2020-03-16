@@ -1,7 +1,8 @@
+import sys
+
 import pygame
 from PyQt5.QtCore import pyqtSignal, QObject, QTimer, pyqtSlot
 from pygame import joystick
-import sys
 
 # init py-game and Joystick lib
 pygame.init()

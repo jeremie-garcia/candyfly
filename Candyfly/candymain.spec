@@ -2,6 +2,8 @@
 
 block_cipher = None
 
+#TODO Add hidden libusb dependencies
+
 a = Analysis(['candymain.py'],
              pathex=['/Users/jeremiegarcia/Documents/dev/candyfly/Candyfly'],
              binaries=[],
@@ -10,7 +12,7 @@ a = Analysis(['candymain.py'],
                     ('img', 'img')],
              hiddenimports=[],
              hookspath=[],
-             runtime_hooks=[],
+             runtime_hooks=['usb.backend.libusb0'],
              excludes=[],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
