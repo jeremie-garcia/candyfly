@@ -69,14 +69,8 @@ class CrazyDrone(Drone):
         except KeyError as e:
             print(e)
 
-        # initialize stabilization
-        self._cf.param.set_value('kalman.resetEstimation', '1')
-        sleep(0.1)
-        self._cf.param.set_value('kalman.resetEstimation', '0')
-        sleep(2)
-
         self.connection.emit("on")
-        self.motion_commander = MotionCommander(self._cf, 0.2)
+        self.motion_commander = MotionCommander(self._cf, 0.5)
         self.multiranger = Multiranger(self._cf, rate_ms=50)
         self.multiranger.start()
 
