@@ -11,6 +11,7 @@ def find_available_drones():
 class Drone(QObject):
     connection = pyqtSignal(str)
     batteryValue = pyqtSignal(float)
+    is_flying = pyqtSignal(bool)
 
     def __init__(self):
         super().__init__()

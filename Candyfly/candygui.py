@@ -57,6 +57,7 @@ class DroneStrip(QGraphicsRectItem):
     def __init__(self, _win):
         super().__init__(0, 0, 300, 100)
         _scene = _win.scene
+        self.win = _win
 
         self.setPen(FG_PEN)
 
@@ -83,14 +84,14 @@ class DroneStrip(QGraphicsRectItem):
 
         battery_text = QGraphicsTextItem("Battery: ", self)
         battery_text.setDefaultTextColor(FG_COL)
-        battery_text.setPos(150, 30)
+        battery_text.setPos(0, 65)
 
-        battery_level_bg = QGraphicsRectItem(205, 28, 80, 30, self)
+        battery_level_bg = QGraphicsRectItem(55, 63, 80, 30, self)
         battery_level_bg.setPen(FG_PEN)
         battery_level_bg.setBrush(Qt.darkGray)
         self.battery_level_bg = battery_level_bg
 
-        battery_level = QGraphicsRectItem(206, 29, 10, 28, self)
+        battery_level = QGraphicsRectItem(56, 64, 10, 28, self)
         battery_level.setPen(Qt.transparent)
         battery_level.setBrush(Qt.darkRed)
         self.battery_level_rect = battery_level
@@ -99,6 +100,36 @@ class DroneStrip(QGraphicsRectItem):
         battery_level_value.setDefaultTextColor(BG_COL)
         battery_level_value.setPos(230, 30)
         self.battery_level_value = battery_level_value
+
+
+        takeoff_level_bg = QGraphicsRectItem(160, 30, 120, 60, self)
+        takeoff_level_bg.setPen(FG_PEN)
+        takeoff_level_bg.setBrush(Qt.darkGray)
+        self.takeoff_level_bg = takeoff_level_bg
+
+        takeoff_level = QGraphicsRectItem(161, 31, 119, 59, self)
+        takeoff_level.setPen(Qt.transparent)
+        takeoff_level.setBrush(Qt.darkGray)
+        self.takeoff_level_rect = takeoff_level
+
+        takeoff_text = QGraphicsTextItem("Décollage", self)
+        takeoff_text.setDefaultTextColor(FG_COL)
+        takeoff_text.setPos(180, 30)
+        self.is_flying = False
+
+    def mousePressEvent(self, event):
+        if self.takeoff_level_rect.contains(event.pos()):
+            if self.is_flying :
+                self.win.ask_land.emit()
+            else:
+                self.win.ask_take_off.emit()
+
+    def update_is_flying(self, is_flying):
+        self.is_flying = is_flying
+        if is_flying:
+            self.takeoff_level_rect.setBrush(Qt.darkGreen)
+        else:
+            self.takeoff_level_rect.setBrush(Qt.darkGray)
 
     def update_connection(self, status):
         if status == "on":
@@ -155,14 +186,14 @@ class CommandStrip(QGraphicsRectItem):
         line = QGraphicsLineItem(0, 20, 300, 20, self)
         line.setPen(FG_PEN)
 
-        frsky_text = QGraphicsTextItem("FRSKY: ", self)
-        frsky_text.setDefaultTextColor(FG_COL)
-        frsky_text.setPos(0, 30)
+        riot_text = QGraphicsTextItem("Riot: ", self)
+        riot_text.setDefaultTextColor(FG_COL)
+        riot_text.setPos(0, 30)
 
-        frsky_led = QGraphicsEllipseItem(50, 28, 30, 30, self)
-        frsky_led.setPen(FG_PEN)
-        frsky_led.setBrush(OFF_BRUSH)
-        self.frsky_led = frsky_led
+        riot_led = QGraphicsEllipseItem(50, 28, 30, 30, self)
+        riot_led.setPen(FG_PEN)
+        riot_led.setBrush(OFF_BRUSH)
+        self.riot_led = riot_led
 
         control_toggle = QGraphicsRectItem(90, 30, 40, 20, self)
         control_toggle.setPen(FG_PEN)
@@ -195,7 +226,7 @@ class CommandStrip(QGraphicsRectItem):
 
     def set_selected_control(self, _control):
         # print("controller", _control)
-        if _control == "frsky":
+        if _control == "riot":
             self.selected_control.setPos(0, 0)
         else:
             self.selected_control.setPos(20, 0)
@@ -206,12 +237,12 @@ class CommandStrip(QGraphicsRectItem):
         else:
             self.mode_discret.setChecked(True)
 
-    def update_frsky_connection(self, is_connected):
+    def update_riot_connection(self, is_connected):
         # print("connection ", is_connected)
         if is_connected:
-            self.frsky_led.setBrush(ON_BRUSH)
+            self.riot_led.setBrush(ON_BRUSH)
         else:
-            self.frsky_led.setBrush(OFF_BRUSH)
+            self.riot_led.setBrush(OFF_BRUSH)
 
     def update_arduino_connection(self, is_connected):
         if is_connected:
@@ -825,6 +856,9 @@ class CandyWin(QMainWindow):
     calibrationChanged = pyqtSignal()
     discrete_threshold_changed = pyqtSignal(float)
     discrete_duration_changed = pyqtSignal(float)
+    ask_take_off = pyqtSignal()
+    ask_land = pyqtSignal()
+
 
     def __init__(self):
         super().__init__()
@@ -884,8 +918,8 @@ class CandyWin(QMainWindow):
         if connection_status != "on":
             self.droneStrip.update_battery_level(0)
 
-    def update_frsky_connection(self, is_connected):
-        self.commandStrip.update_frsky_connection(is_connected)
+    def update_riot_connection(self, is_connected):
+        self.commandStrip.update_riot_connection(is_connected)
 
     def update_arduino_connection(self, is_connected):
         self.commandStrip.update_arduino_connection(is_connected)

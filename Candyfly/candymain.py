@@ -5,10 +5,11 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QFileDialog, QAction
 
 from arduino import *
+from riot import *
 from candygui import CandyWin
 from crazydrone import *
-from frsky import *
 
+RIOT_ID = 0
 FRSKY_ARDUINO_SAFETY_INDEX = 4
 FRSKY_LAND_TAKE_OFF_INDEX = 3
 
@@ -48,10 +49,11 @@ class CandyFly(QApplication):
         file_menu = menubar.addMenu('File')
         file_menu.addAction(exit_action)
 
+
         self.drone = None
         self.arduino = None
-        self.frsky = None
-        self.is_frsky = True
+        self.is_riot = False
+        self.riot = None
 
         calib = self.candyWin.get_calibration()
         self.calibration_values = [calib['up'], calib['down'], calib['clock'], calib['anticlock'], calib['front'],
@@ -69,7 +71,7 @@ class CandyFly(QApplication):
         self.discrete_mode_timer_tick = 100  # ms
 
         self.candyWin.refreshDeviceAsked.connect(self.init_arduino)
-        self.candyWin.refreshDeviceAsked.connect(self.init_frsky)
+        self.candyWin.refreshDeviceAsked.connect(self.init_riot)
         self.candyWin.refreshDroneAsked.connect(self.init_drone_connection)
         self.candyWin.presetChanged.connect(self.load_params_from_file)
         self.candyWin.saveAsked.connect(self.save_as)
@@ -78,15 +80,18 @@ class CandyFly(QApplication):
         self.candyWin.discrete_threshold_changed.connect(self.update_discrete_threshold)
         self.candyWin.discrete_duration_changed.connect(self.update_discrete_duration)
 
+        self.candyWin.ask_land.connect(self.land)
+        self.candyWin.ask_take_off.connect(self.take_off)
+
         # load presets
         script_dir = self.get_script_dir()
         self.presets_path = script_dir + os.path.sep + 'presets'
         self.candyWin.presetStrip.populate_presets(self.presets_path)
 
         # init resources
-        self.init_frsky()
         self.init_arduino()
         self.init_drone_connection()
+        self.init_riot()
 
         # do it after using pygame stuff (since it changes the icon)
         self.set_icon()
@@ -109,7 +114,7 @@ class CandyFly(QApplication):
         self.update_discrete_motion_timer()
 
     def update_discrete_motion_timer(self):
-        if self.mode == "discret" and not self.is_frsky:
+        if self.mode == "discret":
             self.discrete_mode_timer.start(self.discrete_mode_timer_tick)
         else:
             self.discrete_mode_timer.stop()
@@ -150,8 +155,8 @@ class CandyFly(QApplication):
             self.drone.stop()
         if self.arduino:
             self.arduino.stop()
-        if self.frsky:
-            self.frsky.stop()
+        if self.riot:
+            self.riot.stop()
 
     def set_icon(self):
         script_dir = self.get_script_dir()
@@ -294,23 +299,20 @@ class CandyFly(QApplication):
             self.arduino.connection.connect(self.candyWin.update_arduino_connection)
             self.arduino.sensors.connect(self.process_arduino_sensors)
             self.arduino.start()
+            self.process_arduino_sensors(0, 0, 0, 0)
         else:
             self.arduino = None
             # print('No Arduino found, Refresh')
 
-    def init_frsky(self):
-        if self.frsky:
-            self.frsky.stop()
-        available = find_available_frsky_ids()
-        if len(available) > 0:
-            self.frsky = FrSky(available[0])
-            self.frsky.connection.connect(self.candyWin.update_frsky_connection)
-            self.frsky.values.connect(self.process_frsky_values)
-            self.frsky.buttons.connect(self.process_frsky_buttons)
-            self.frsky.start()
-        else:
-            self.frsky = None
-            # print('No FRSKY found, Refresh')
+    def init_riot(self):
+        if self.riot:
+            self.riot.stop()
+
+        self.riot = Riot(RIOT_ID)
+        # self.frsky.connection.connect(self.candyWin.update_frsky_connection)
+        # self.frsky.values.connect(self.process_frsky_values)
+        # self.frsky.buttons.connect(self.process_frsky_buttons)
+        self.riot.start()
 
     def update_calibration(self):
         calib = self.candyWin.get_calibration()
@@ -318,29 +320,21 @@ class CandyFly(QApplication):
                                    calib['back'], calib['right'], calib['left']]
 
     def update_selected_controller(self):
-        if self.is_frsky:
-            self.candyWin.set_selected_controller("frsky")
+        if self.is_riot:
+            self.candyWin.set_selected_controller("riot")
         else:
             self.candyWin.set_selected_controller("arduino")
 
-    def process_frsky_buttons(self, _id, _value):
-        if _id == FRSKY_ARDUINO_SAFETY_INDEX:
-            if _value > 0:
-                self.is_frsky = True
-                if not (self.frsky is None):
-                    self.frsky.send_last_values()
-            else:
-                self.is_frsky = False
-                self.process_arduino_sensors(0, 0, 0, 0)
-            self.update_selected_controller()
-            self.update_discrete_motion_timer()
+        self.update_selected_controller()
+        self.update_discrete_motion_timer()
 
-        if _id == FRSKY_LAND_TAKE_OFF_INDEX:
-            if not (self.drone is None):
-                if _value > 0:
-                    self.drone.take_off()
-                elif self.drone:
-                    self.drone.land()
+    def take_off(self):
+        if not (self.drone is None):
+            self.drone.take_off()
+
+    def land(self):
+        if not (self.drone is None):
+            self.drone.land()
 
     def apply_calibration(self, _up, _rotate, _front, _right):
         parameters = self.calibration_values
@@ -350,33 +344,29 @@ class CandyFly(QApplication):
         _right = scale_value(_right, parameters[6], parameters[7])
         return _up, _rotate, _front, _right
 
-    def process_frsky_values(self, _up, _rotate, _front, _right):
-        if self.is_frsky:
-            self.candyWin.commandViewer.display_processed_inputs(_up, _rotate, _front, _right)
-            if self.drone is not None:
-                self.drone.process_motion(_up, _rotate, _front, _right)
-
     def process_arduino_sensors(self, _up, _rotate, _front, _right):
         self.candyWin.commandViewer.display_raw_inputs(_up, _rotate, _front, _right)
-        if not self.is_frsky:
-            _up, _rotate, _front, _right = self.apply_calibration(_up, _rotate, _front, _right)
-            self.candyWin.commandViewer.display_processed_inputs(_up, _rotate, _front, _right)
 
-            axes = self.candyWin.get_axes()
-            if not axes[0]:
-                _up = 0
-            if not axes[1]:
-                _rotate = 0
-            if not axes[2]:
-                _front = 0
-            if not axes[3]:
-                _right = 0
+        #calibrate input and display
+        _up, _rotate, _front, _right = self.apply_calibration(_up, _rotate, _front, _right)
+        self.candyWin.commandViewer.display_processed_inputs(_up, _rotate, _front, _right)
 
-            if self.frsky is not None:
-                if self.candyWin.get_mode() == "discret":
-                    self.process_discrete_motion(_up, _rotate, _front, _right)
-                elif self.drone is not None:
-                    self.drone.process_motion(_up, _rotate, _front, _right)
+        #set inactive axes to zero
+        axes = self.candyWin.get_axes()
+        if not axes[0]:
+            _up = 0
+        if not axes[1]:
+            _rotate = 0
+        if not axes[2]:
+            _front = 0
+        if not axes[3]:
+            _right = 0
+
+        #route depending on mode (discrete or continous)
+        if self.candyWin.get_mode() == "discret":
+            self.process_discrete_motion(_up, _rotate, _front, _right)
+        elif self.drone is not None:
+            self.drone.process_motion(_up, _rotate, _front, _right)
 
 
 if __name__ == '__main__':
