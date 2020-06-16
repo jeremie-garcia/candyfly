@@ -94,12 +94,14 @@ class CrazyDrone(Drone):
         self.connection.emit("off")
 
     def take_off(self):
-        if self._cf.is_connected() and self.motion_commander:
+        if self._cf.is_connected() and self.motion_commander and not self.motion_commander._is_flying:
             self.motion_commander.take_off()
+            self.is_flying.emit(True)
 
     def land(self):
-        if self._cf.is_connected() and self.motion_commander:
+        if self._cf.is_connected() and self.motion_commander and self.motion_commander._is_flying:
             self.motion_commander.land()
+            self.is_flying.emit(False)
 
     def stop(self):
         if not (self.logger is None):

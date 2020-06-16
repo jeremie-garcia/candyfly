@@ -75,7 +75,6 @@ class ArduinoController(QObject):
     def stop(self):
         self.alive = False
         self.timer.stop()
-        self.thread.stop()
         if self.arduino.isOpen():
             self.arduino.close()
         self.connection.emit(False)

@@ -52,6 +52,12 @@ PAGE_BUTTON_STYLE_SHEET = "background-color: black; border-style: outset; border
 ACTIVE_PAGE_BUTTON_STYLE_SHEET = "background-color: rgb(169,49,178); border-style: outset; border-width: 1px; " \
                                  "border-radius: 0px; color:lightGray ;border-color: beige; "
 
+TAKEOFF_BUTTON_STYLE_SHEET = "background-color: green; border-style: outset; border-width: 1px; border-radius: 2px; " \
+                          "color:lightGray ;border-color: beige; min-width:120px; min-height:60px;"
+
+LAND_BUTTON_STYLE_SHEET = "background-color: red; border-style: outset; border-width: 1px; border-radius: 2px; " \
+                          "color:lightGray ;border-color: beige; min-width:120px; min-height:60px;"
+
 
 class DroneStrip(QGraphicsRectItem):
     def __init__(self, _win):
@@ -98,38 +104,30 @@ class DroneStrip(QGraphicsRectItem):
 
         battery_level_value = QGraphicsTextItem("0v", self)
         battery_level_value.setDefaultTextColor(BG_COL)
-        battery_level_value.setPos(230, 30)
+        battery_level_value.setPos(80, 70)
         self.battery_level_value = battery_level_value
 
-
-        takeoff_level_bg = QGraphicsRectItem(160, 30, 120, 60, self)
-        takeoff_level_bg.setPen(FG_PEN)
-        takeoff_level_bg.setBrush(Qt.darkGray)
-        self.takeoff_level_bg = takeoff_level_bg
-
-        takeoff_level = QGraphicsRectItem(161, 31, 119, 59, self)
-        takeoff_level.setPen(Qt.transparent)
-        takeoff_level.setBrush(Qt.darkGray)
-        self.takeoff_level_rect = takeoff_level
-
-        takeoff_text = QGraphicsTextItem("Décollage", self)
-        takeoff_text.setDefaultTextColor(FG_COL)
-        takeoff_text.setPos(180, 30)
         self.is_flying = False
+        self.takeoff = QPushButton("Décollage")
+        self.takeoff.setStyleSheet(TAKEOFF_BUTTON_STYLE_SHEET)
+        self.proxy_btn = _scene.addWidget(self.takeoff)
+        self.proxy_btn.setPos(160, TOP_ANCHOR + 30)
+        self.takeoff.clicked.connect(self.process_takeoff_land_req_click)
 
-    def mousePressEvent(self, event):
-        if self.takeoff_level_rect.contains(event.pos()):
-            if self.is_flying :
-                self.win.ask_land.emit()
-            else:
-                self.win.ask_take_off.emit()
+    def process_takeoff_land_req_click(self):
+        if self.is_flying:
+            self.win.ask_land.emit()
+        else:
+            self.win.ask_take_off.emit()
 
     def update_is_flying(self, is_flying):
         self.is_flying = is_flying
         if is_flying:
-            self.takeoff_level_rect.setBrush(Qt.darkGreen)
+            self.takeoff.setStyleSheet(LAND_BUTTON_STYLE_SHEET)
+            self.takeoff.setText('Atterrissage')
         else:
-            self.takeoff_level_rect.setBrush(Qt.darkGray)
+            self.takeoff.setStyleSheet(TAKEOFF_BUTTON_STYLE_SHEET)
+            self.takeoff.setText('Décollage')
 
     def update_connection(self, status):
         if status == "on":
@@ -912,6 +910,9 @@ class CandyWin(QMainWindow):
 
     def update_battery(self, battery_val):
         self.droneStrip.update_battery_level(battery_val)
+
+    def update_is_flying(self, is_flying):
+        self.droneStrip.update_is_flying(is_flying)
 
     def update_drone_connection(self, connection_status):
         self.droneStrip.update_connection(connection_status)

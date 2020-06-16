@@ -269,7 +269,7 @@ class CandyFly(QApplication):
             self.drone.stop()
 
         available = find_available_drones()
-        # print("Available drones " + str(available))
+        print("Available drones " + str(available))
         if len(available) > 0:
             self.drone = CrazyDrone(available[0][0])
 
@@ -284,6 +284,8 @@ class CandyFly(QApplication):
             self.candyWin.verticalSpeedValueChanged.connect(self.drone.set_max_vertical_speed)
             self.candyWin.horizontalSpeedValueChanged.connect(self.drone.set_max_horizontal_speed)
             self.candyWin.rotationSpeedValueChanged.connect(self.drone.set_max_rotation_speed)
+
+            self.drone.is_flying.connect(self.candyWin.update_is_flying)
         else:
             self.drone = None
             # print('No Crazyflies found, Refresh')
