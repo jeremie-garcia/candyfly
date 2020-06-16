@@ -96,12 +96,12 @@ class CrazyDrone(Drone):
     def take_off(self):
         if self._cf.is_connected() and self.motion_commander and not self.motion_commander._is_flying:
             self.motion_commander.take_off()
-            self.is_flying.emit(True)
+            self.is_flying_signal.emit(True)
 
     def land(self):
         if self._cf.is_connected() and self.motion_commander and self.motion_commander._is_flying:
             self.motion_commander.land()
-            self.is_flying.emit(False)
+            self.is_flying_signal.emit(False)
 
     def stop(self):
         if not (self.logger is None):
@@ -111,6 +111,13 @@ class CrazyDrone(Drone):
         if self.multiranger:
             self.multiranger.stop()
         self._cf.close_link()
+
+    def is_flying(self):
+        if self._cf.is_connected() and self.motion_commander:
+            return self.motion_commander._is_flying
+
+        return False
+
 
     def process_motion(self, _up, _rotate, _front, _right):
         if self.motion_commander:

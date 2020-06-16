@@ -285,10 +285,21 @@ class CandyFly(QApplication):
             self.candyWin.horizontalSpeedValueChanged.connect(self.drone.set_max_horizontal_speed)
             self.candyWin.rotationSpeedValueChanged.connect(self.drone.set_max_rotation_speed)
 
-            self.drone.is_flying.connect(self.candyWin.update_is_flying)
+            self.drone.is_flying_signal.connect(self.candyWin.update_is_flying)
         else:
             self.drone = None
             # print('No Crazyflies found, Refresh')
+
+    def process_takeoff_button(self):
+        if not (self.drone is None):
+            if self.drone.is_flying():
+                print("land")
+                self.land()
+            else:
+                print('take off')
+                self.take_off()
+
+
 
     def init_arduino(self):
         if self.arduino:
@@ -300,6 +311,7 @@ class CandyFly(QApplication):
             self.arduino = ArduinoController(available[0])
             self.arduino.connection.connect(self.candyWin.update_arduino_connection)
             self.arduino.sensors.connect(self.process_arduino_sensors)
+            self.arduino.clicked.connect(self.process_takeoff_button)
             self.arduino.start()
             self.process_arduino_sensors(0, 0, 0, 0)
         else:

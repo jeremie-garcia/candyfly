@@ -11,7 +11,7 @@ def find_available_drones():
 class Drone(QObject):
     connection = pyqtSignal(str)
     batteryValue = pyqtSignal(float)
-    is_flying = pyqtSignal(bool)
+    is_flying_signal = pyqtSignal(bool)
 
     def __init__(self):
         super().__init__()
@@ -29,6 +29,9 @@ class Drone(QObject):
         raise NotImplementedError
 
     def stop(self):
+        raise NotImplementedError
+
+    def is_flying(self):
         raise NotImplementedError
 
     def set_max_vertical_speed(self, _max):

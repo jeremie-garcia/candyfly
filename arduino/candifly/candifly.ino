@@ -1,3 +1,4 @@
+int buttonPin = 2;
 
 int fsrReadingUp = 0;
 int fsrReadingDown = 0;
@@ -7,12 +8,15 @@ int fsrReadingYaw_clock = 0;
 int fsrReadingYaw_no_clock = 0;
 int fsrReadingFront = 0;
 int fsrReadingBack = 0;
+int buttonReading = 0;
 
 void setup() {
    Serial.begin(9600);
+   pinMode(buttonPin, INPUT);
 }
 
 void loop() {
+
   fsrReadingDown = analogRead(0);
   fsrReadingUp = analogRead(1);
   fsrReadingYaw_no_clock = analogRead(2);
@@ -21,6 +25,8 @@ void loop() {
   fsrReadingFront = analogRead(5);
   fsrReadingLeft = analogRead(6);
   fsrReadingRight = analogRead(7);
+  
+  buttonReading = digitalRead(buttonPin);
 
   Serial.print(fsrReadingDown);
   Serial.print(" ");
@@ -37,6 +43,9 @@ void loop() {
   Serial.print(fsrReadingLeft);
   Serial.print(" ");
   Serial.print(fsrReadingRight);
+  Serial.print(" ");
+  Serial.print(buttonReading);
   Serial.println("");
+
 
 }

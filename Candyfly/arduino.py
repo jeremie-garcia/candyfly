@@ -18,6 +18,7 @@ def find_available_arduinos():
 class ArduinoController(QObject):
     connection = pyqtSignal(bool)
     sensors = pyqtSignal(float, float, float, float)
+    clicked = pyqtSignal()
 
     def __init__(self, _port, _stream=False, _update_in_millis=50):
         super().__init__()
@@ -32,6 +33,7 @@ class ArduinoController(QObject):
         self.thread = Thread(target=self.readSerial, daemon=True)
         self.prevSensorsValues = [0, 0, 0, 0]
         self.sensorsValues = [0, 0, 0, 0]
+        self.buttonState = 0
         self.alive = False
 
     def readSerial(self):
@@ -42,11 +44,18 @@ class ArduinoController(QObject):
                     if data:
                         data_string = data.decode("utf8")
                         datas = data_string.split()
-                        if len(datas) == 8:
+                        if len(datas) == 9:
                             self.sensorsValues[0] = (int(datas[1]) - int(datas[0])) / 1024
                             self.sensorsValues[1] = (int(datas[3]) - int(datas[2])) / 1024
                             self.sensorsValues[2] = (int(datas[5]) - int(datas[4])) / 1024
                             self.sensorsValues[3] = (int(datas[7]) - int(datas[6])) / 1024
+                            button_value = int(datas[8])
+                            if self.buttonState == 1 and button_value == 0:
+                                self.clicked.emit()
+                                self.buttonState = 0
+                            elif self.buttonState == 0 and button_value == 1:
+                                self.buttonState = 1
+
                         else:
                             print('not enough data, needs 8 arguments')
                 except(SerialException):
