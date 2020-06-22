@@ -1,7 +1,7 @@
-from PyQt5.QtCore import QObject, pyqtSignal
 from oscpy.server import OSCThreadServer
 
 from crazydrone import *
+
 
 #
 

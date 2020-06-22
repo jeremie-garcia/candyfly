@@ -25,7 +25,7 @@ class ARDrone(Drone):
         self.bebop.enable_geofence(1)
         self.bebop.set_hull_protection(1)
 
-        # todo: battery signal to emi (look in sensors)
+        # todo: battery signal to emit (look in sensors)
 
     def take_off(self):
         self.bebop.safe_takeoff(5)

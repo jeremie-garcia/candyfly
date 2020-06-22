@@ -61,6 +61,9 @@ class ArduinoController(QObject):
                 except(SerialException):
                     self.stop()
 
+        if self.arduino.isOpen():
+            self.arduino.close()
+
     def process(self):
         if self.arduino.isOpen():
             if self.stream:
@@ -84,10 +87,7 @@ class ArduinoController(QObject):
     def stop(self):
         self.alive = False
         self.timer.stop()
-        if self.arduino.isOpen():
-            self.arduino.close()
         self.connection.emit(False)
-
 
     def start(self):
         self.arduino = Serial(port=self.arduino_port, baudrate=9600, timeout=0.2)

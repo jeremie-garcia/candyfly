@@ -5,13 +5,10 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QFileDialog, QAction
 
 from arduino import *
+from candyGuiForm import CandyWinForm
 from riot import *
-from candygui import CandyWin
-from crazydrone import *
 
 RIOT_ID = 0
-FRSKY_ARDUINO_SAFETY_INDEX = 4
-FRSKY_LAND_TAKE_OFF_INDEX = 3
 
 
 def scale_value(_val, _positive_params, _negative_params):
@@ -34,14 +31,26 @@ def scale_value(_val, _positive_params, _negative_params):
     return _val
 
 
+def get_script_dir():
+    if getattr(sys, 'frozen', False):
+        # TODO: test on other platforms (windows mostly)
+        if sys.platform == 'win32' or sys.platform == 'win64' or sys.platform == 'linux':
+            return os.path.dirname(sys.executable)
+        else:
+            return os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(sys.executable))))
+    else:
+        return os.path.dirname(os.path.realpath(__file__))
+
+
 class CandyFly(QApplication):
     def __init__(self, args):
         QApplication.__init__(self, args)
         self.aboutToQuit.connect(self.stop_all)
 
-        self.candyWin = CandyWin()
+        self.candyWin = CandyWinForm()
         self.set_icon()
         self.candyWin.show()
+        self.candyWin.setGeometry(0,0,1200,800)
 
         exit_action = QAction('Quit', self)
         exit_action.triggered.connect(self.quit)
@@ -49,15 +58,15 @@ class CandyFly(QApplication):
         file_menu = menubar.addMenu('File')
         file_menu.addAction(exit_action)
 
-
         self.drone = None
         self.arduino = None
         self.is_riot = False
         self.riot = None
 
-        calib = self.candyWin.get_calibration()
-        self.calibration_values = [calib['up'], calib['down'], calib['clock'], calib['anticlock'], calib['front'],
-                                   calib['back'], calib['right'], calib['left']]
+        calibration = self.candyWin.get_calibration()
+        self.calibration_values = [calibration['up'], calibration['down'], calibration['clock'],
+                                   calibration['anticlock'], calibration['front'],
+                                   calibration['back'], calibration['right'], calibration['left']]
 
         # used for discrete motion (click-like)
         self.mode = "continu"
@@ -70,13 +79,14 @@ class CandyFly(QApplication):
         self.discrete_duration = 1000
         self.discrete_mode_timer_tick = 100  # ms
 
-        self.candyWin.refreshDeviceAsked.connect(self.init_arduino)
-        self.candyWin.refreshDeviceAsked.connect(self.init_riot)
+        self.candyWin.refreshArduinoAsked.connect(self.init_arduino)
+        self.candyWin.refreshRiotAsked.connect(self.init_riot)
         self.candyWin.refreshDroneAsked.connect(self.init_drone_connection)
+
         self.candyWin.presetChanged.connect(self.load_params_from_file)
         self.candyWin.saveAsked.connect(self.save_as)
         self.candyWin.calibrationChanged.connect(self.update_calibration)
-        self.candyWin.commandModeChanged.connect(self.update_mode)
+        self.candyWin.arduino_mode_changed.connect(self.update_mode)
         self.candyWin.discrete_threshold_changed.connect(self.update_discrete_threshold)
         self.candyWin.discrete_duration_changed.connect(self.update_discrete_duration)
 
@@ -84,16 +94,18 @@ class CandyFly(QApplication):
         self.candyWin.ask_take_off.connect(self.take_off)
 
         # load presets
-        script_dir = self.get_script_dir()
+        script_dir = get_script_dir()
         self.presets_path = script_dir + os.path.sep + 'presets'
-        self.candyWin.presetStrip.populate_presets(self.presets_path)
+        self.candyWin.populate_presets(self.presets_path)
 
         # init resources
         self.init_arduino()
         self.init_drone_connection()
         self.init_riot()
 
-        # do it after using pygame stuff (since it changes the icon)
+        # init values to default
+        self.candyWin.update_battery_level(0)
+
         self.set_icon()
         sys.exit(self.exec_())
 
@@ -124,8 +136,8 @@ class CandyFly(QApplication):
         _rotate = self.discrete_motion_values[1]
         _front = self.discrete_motion_values[2]
         _right = self.discrete_motion_values[3]
-        # print("Discrete Motion Command: ", _up, _rotate, _front, _right)
-        if self.drone is not None:
+        print("Discrete Motion Command: ", _up, _rotate, _front, _right)
+        if self.drone is not None and self.drone.is_flying():
             self.drone.process_motion(_up, _rotate, _front, _right)
 
     def process_discrete_motion(self, _up, _rotate, _front, _right):
@@ -159,40 +171,28 @@ class CandyFly(QApplication):
             self.riot.stop()
 
     def set_icon(self):
-        script_dir = self.get_script_dir()
+        script_dir = get_script_dir()
         icon_path = script_dir + os.path.sep + 'img' + os.path.sep + 'icon.png'
         self.setWindowIcon(QIcon(icon_path))
 
-    def get_script_dir(self):
-        if getattr(sys, 'frozen', False):
-            # TODO: test on other platforms (windows mostly)
-            if sys.platform == 'win32' or sys.platform == 'win64' or sys.platform == 'linux':
-                return os.path.dirname(sys.executable)
-            else:
-                return os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(sys.executable))))
-        else:
-            return os.path.dirname(os.path.realpath(__file__))
-
     def load_params_from_file(self, file):
         if file is not None:
-            script_dir = self.get_script_dir()
+            script_dir = get_script_dir()
             json_file_path = script_dir + os.path.sep + 'presets' + os.path.sep + file
             json_file = io.open(json_file_path, 'r', encoding='utf8')
             data = json.load(json_file)
             self.set_params(data)
-            self.candyWin.set_current_preset(file)
         else:
-            self.set_params(None)
+            self.set_params({})
 
     def save_as(self):
         # save as button
-        script_dir = self.get_script_dir()
+        script_dir = get_script_dir()
         json_file_path = script_dir + os.path.sep + 'presets'
         file_name, _ = QFileDialog.getSaveFileName(self.candyWin, "Enregistrer sous", json_file_path,
                                                    "JSON Files (*.json)")
         if file_name:
             self.save_current_params_in_file(file_name)
-            self.candyWin.set_current_preset(os.path.basename(file_name))
 
     def save_current_params_in_file(self, file):
         if file is not None:
@@ -202,6 +202,7 @@ class CandyFly(QApplication):
 
             outfile = io.open(file, 'w', encoding='utf8')
             json.dump(data, outfile, indent=2, ensure_ascii=False)
+            outfile.close()
 
     def set_params(self, params):
         axes = [True, True, True, True]
@@ -244,12 +245,13 @@ class CandyFly(QApplication):
         self.candyWin.set_max_horiz_speed(horizontal)
         self.candyWin.set_max_vert_speed(vertical)
         self.candyWin.set_max_rotation_speed(rotation)
-        self.candyWin.set_mode(mode)
+        self.candyWin.set_arduino_mode(mode)
         self.candyWin.set_comments(commentaires)
         self.candyWin.set_calibration(calibration)
         self.update_mode(mode)
         self.candyWin.set_discrete_duration(discrete_duration)
         self.candyWin.set_discrete_threshold(discrete_threshold)
+
 
     def get_params(self):
         json_obj = {"axes": self.candyWin.get_axes(),
@@ -280,7 +282,7 @@ class CandyFly(QApplication):
 
             # add signal/slots
             self.drone.connection.connect(self.candyWin.update_drone_connection)
-            self.drone.batteryValue.connect(self.candyWin.update_battery)
+            self.drone.batteryValue.connect(self.candyWin.update_battery_level)
             self.candyWin.verticalSpeedValueChanged.connect(self.drone.set_max_vertical_speed)
             self.candyWin.horizontalSpeedValueChanged.connect(self.drone.set_max_horizontal_speed)
             self.candyWin.rotationSpeedValueChanged.connect(self.drone.set_max_rotation_speed)
@@ -298,8 +300,6 @@ class CandyFly(QApplication):
             else:
                 print('take off')
                 self.take_off()
-
-
 
     def init_arduino(self):
         if self.arduino:
@@ -323,9 +323,7 @@ class CandyFly(QApplication):
             self.riot.stop()
 
         self.riot = Riot(RIOT_ID)
-        # self.frsky.connection.connect(self.candyWin.update_frsky_connection)
-        # self.frsky.values.connect(self.process_frsky_values)
-        # self.frsky.buttons.connect(self.process_frsky_buttons)
+        self.riot.connection.connect(self.candyWin.update_riot_connection)
         self.riot.start()
 
     def update_calibration(self):
@@ -359,13 +357,13 @@ class CandyFly(QApplication):
         return _up, _rotate, _front, _right
 
     def process_arduino_sensors(self, _up, _rotate, _front, _right):
-        self.candyWin.commandViewer.display_raw_inputs(_up, _rotate, _front, _right)
+        self.candyWin.display_raw_inputs(_up, _rotate, _front, _right)
 
-        #calibrate input and display
+        # calibrate input and display
         _up, _rotate, _front, _right = self.apply_calibration(_up, _rotate, _front, _right)
-        self.candyWin.commandViewer.display_processed_inputs(_up, _rotate, _front, _right)
+        self.candyWin.display_processed_inputs(_up, _rotate, _front, _right)
 
-        #set inactive axes to zero
+        # set inactive axes to zero
         axes = self.candyWin.get_axes()
         if not axes[0]:
             _up = 0
@@ -376,7 +374,7 @@ class CandyFly(QApplication):
         if not axes[3]:
             _right = 0
 
-        #route depending on mode (discrete or continous)
+        # route depending on mode (discrete or continous)
         if self.candyWin.get_mode() == "discret":
             self.process_discrete_motion(_up, _rotate, _front, _right)
         elif self.drone is not None:

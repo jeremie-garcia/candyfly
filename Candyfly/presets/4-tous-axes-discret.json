@@ -8,42 +8,42 @@
   "commentaires": "Presets pour débuter",
   "horizontal": 1.0,
   "vertical": 1.0,
-  "rotation": 90.0,
-  "mode": "continu",
+  "rotation": 90,
+  "mode": "discret",
   "calibration": {
     "up": [
-      0.0,
-      1.0
+      0.23,
+      0.95
     ],
     "down": [
-      0.0,
-      1.0
+      0.26,
+      0.95
     ],
     "clock": [
-      0.0,
+      0.23,
       1.0
     ],
     "anticlock": [
-      0.0,
-      1.0
+      0.25,
+      0.95
     ],
     "front": [
-      0.0,
-      1.0
+      0.21,
+      0.95
     ],
     "back": [
-      0.0,
-      1.0
+      0.26,
+      0.95
     ],
     "right": [
-      0.0,
-      1.0
+      0.22,
+      0.95
     ],
     "left": [
-      0.0,
-      1.0
+      0.23,
+      0.95
     ]
   },
-  "discrete_threshold": 0.5,
-  "discrete_duration": 1000.0
+  "discrete_threshold": 0,
+  "discrete_duration": 1000
 }
