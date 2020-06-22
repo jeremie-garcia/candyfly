@@ -1,1 +1,0 @@
-    saveAsked = pyqtSignal()
