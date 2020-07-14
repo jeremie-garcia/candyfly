@@ -171,11 +171,9 @@ class CandyWinForm(QMainWindow):
     saveAsked = pyqtSignal()
 
     closing = pyqtSignal()
-    arduino_mode_changed = pyqtSignal(str)
     discrete_threshold_changed = pyqtSignal(int)
     discrete_duration_changed = pyqtSignal(int)
     control_changed = pyqtSignal(str)
-    riot_mode_changed = pyqtSignal(str)
 
     calibrationChanged = pyqtSignal()
 
@@ -268,8 +266,6 @@ class CandyWinForm(QMainWindow):
         self.ui.arduino_refresh_btn.clicked.connect(self.refreshArduinoAsked.emit)
         self.ui.riot_refresh_button.clicked.connect(self.refreshRiotAsked.emit)
 
-        self.ui.arduino_mode_group.buttonClicked.connect(lambda button: self.arduino_mode_changed.emit(button.text()))
-        self.ui.riot_mode_group.buttonClicked.connect(lambda button: self.riot_mode_changed.emit(button.text()))
         self.ui.control_group.buttonClicked.connect(lambda button: self.control_changed.emit(button.text()))
 
         # process speed sliders (handle double values)
@@ -294,6 +290,7 @@ class CandyWinForm(QMainWindow):
             self.ask_take_off.emit()
 
     def update_is_flying(self, is_flying):
+        print('is drone flying ?' , is_flying)
         self.is_flying = is_flying
         if is_flying:
             self.ui.icon1.addPixmap(QPixmap("img/land.png"))
@@ -404,6 +401,12 @@ class CandyWinForm(QMainWindow):
         else:
             self.ui.riot_status_lbl.setStyleSheet(STATUS_OFF_STYLE)
 
+    def update_riot_energy_gauge(self, level):
+        self.ui.riot_energy_gauge.setValue(level)
+
+    def update_riot_spin_gauge(self, level):
+        self.ui.riot_spin_gauge.setValue(level)
+
     def update_arduino_connection(self, is_connected):
         if is_connected:
             self.ui.arduino_status_lbl.setStyleSheet(STATUS_ON_STYLE)
@@ -419,23 +422,21 @@ class CandyWinForm(QMainWindow):
     def set_max_rotation_speed(self, val):
         self.ui.rot_speed_spin.setValue(val)
 
-    def set_arduino_mode(self, _mode):
-        if _mode == "continu":
-            self.ui.arduino_mode_continuous.setChecked(True)
-        else:
-            self.ui.arduino_mode_discrete.setChecked(True)
+    def get_control_mode(self):
+        return self.ui.control_group.checkedButton().text()
 
-    def set_riot_mode(self, _mode):
-        if _mode == "spin":
-            self.ui.riot_mode_spin.setChecked(True)
+    def set_control_mode(self, _mode):
+        if _mode == "Arduino Continu":
+            self.ui.arduino_continous_radio.setChecked(True)
+        elif _mode == " Arduino Discret":
+            self.ui.arduino_discrete_radio.setChecked(True)
+        elif _mode == "Riot Rotation" :
+            self.ui.riot_spin_radio.setChecked(True)
+        elif _mode == "Riot Energie":
+            self.ui.riot_energy_radio.setChecked(True)
         else:
-            self.ui.riot_mode_shake.setChecked(True)
-
-    def set_selected_controller(self, _controller_name):
-        if _controller_name == "riot":
-            self.ui.riot_radio_btn.setChecked(True)
-        else:
-            self.ui.arduino_radio_btn.setChecked(True)
+            #default mode
+            self.ui.arduino_continous_radio.setChecked(True)
 
     def set_comments(self, comments):
         self.ui.comment_textEdit.setText(comments)
@@ -481,9 +482,6 @@ class CandyWinForm(QMainWindow):
 
     def get_discrete_duration(self):
         return self.ui.discrete_duration_spin.value()
-
-    def get_mode(self):
-        return self.ui.arduino_mode_group.checkedButton().text()
 
     def closeEvent(self, event):
         self.closing.emit()

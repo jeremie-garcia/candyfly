@@ -11,6 +11,7 @@ from drone import *
 
 cflib.crtp.init_drivers(enable_debug_driver=False)
 
+
 def find_available_drones():
     return cflib.crtp.scan_interfaces()
 
@@ -116,7 +117,6 @@ class CrazyDrone(Drone):
             return self.motion_commander._is_flying
 
         return False
-
 
     def process_motion(self, _up, _rotate, _front, _right):
         if self.motion_commander:

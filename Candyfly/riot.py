@@ -1,5 +1,5 @@
 from oscpy.server import OSCThreadServer
-
+from PyQt5.QtCore import pyqtSignal, QObject, QTimer, pyqtSlot
 from crazydrone import *
 
 
@@ -30,25 +30,48 @@ class Riot(QObject):
         self.prev_x = self.prev_y = self.prev_z = 0
         self.prev_gx = self.prev_gy = self.prev_gz = 0
 
+        self.is_connected = False
+        self.connection_timer = QTimer(self)
+        self.connection_timer.setSingleShot(True)
+        self.connection_timer.timeout.connect(self.disconnect)
+
+        def restart_timer(is_connected):
+            if is_connected:
+                self.connection_timer.start(1000)
+
+        self.connection.connect(restart_timer)
+
+    def disconnect(self):
+        self.is_connected = False
+        self.connection.emit(False)
+
+
     def OSCcallback(self, *args):
+        if not self.is_connected :
+            self.is_connected = True
+
+        self.connection.emit(True)
         self.acc.emit(args[0], args[1], args[2])
         self.gyro.emit(args[3], args[4], args[5])
-        self.mag.emit(args[6], args[7], args[8])
-        self.tmp.emit(args[9])
-        self.btn.emit(args[10])
-        self.switch.emit(args[11])
-        self.analog.emit(args[12], args[13])
-        self.quat.emit(args[14], args[15], args[16], args[17])
-        self.euler.emit(args[18], args[19], args[20], args[21])
+        #self.mag.emit(args[6], args[7], args[8])
+        #self.tmp.emit(args[9])
+        #self.btn.emit(args[10])
+        #self.switch.emit(args[11])
+        #self.analog.emit(args[12], args[13])
+        #self.quat.emit(args[14], args[15], args[16], args[17])
+        #self.euler.emit(args[18], args[19], args[20], args[21])
 
     def start(self):
+        if self.osc is not None:
+            self.osc.stop_all()
         try:
             port = 8000 + self.riot_id
-            self.sock = self.osc.listen(address='0.0.0.0', port=port, default=True)
+            self.sock = self.osc.listen(address='0.0.0.0', port=port, default=False)
+
             address = '/' + str(self.riot_id) + '/raw'
-            self.osc.bind(address.encode(), self.OSCcallback)
-            print('riot id', self.riot_id, "started on port:", port)
-            self.connection.emit(True)
+            self.osc.bind(address.encode(), self.OSCcallback, self.sock)
+            print('riot id', self.riot_id, "started on port:", port, 'addresses')
+
         except KeyboardInterrupt:
             self.connection.emit(False)
             self.osc.stop_all()
@@ -89,7 +112,7 @@ class Riot(QObject):
 
 if __name__ == "__main__":
     import sys
-    from PyQt5.QtCore import QCoreApplication
+    from PyQt5.QtCore import QCoreApplication, QTimer
 
     app = QCoreApplication([])
     riot_id = 0

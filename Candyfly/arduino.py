@@ -30,7 +30,7 @@ class ArduinoController(QObject):
         self.arduino = None
         self.timer = QTimer()
         self.timer.timeout.connect(self.process)
-        self.thread = Thread(target=self.readSerial, daemon=True)
+        self.thread = None
         self.prevSensorsValues = [0, 0, 0, 0]
         self.sensorsValues = [0, 0, 0, 0]
         self.buttonState = 0
@@ -38,26 +38,32 @@ class ArduinoController(QObject):
 
     def readSerial(self):
         while self.alive:
+            #print('loop')
             if self.arduino.isOpen():
+                #print('loop', 'arduino open')
                 try:
                     data = self.arduino.readline()[:-2]  # the last bit gets rid of the new-line chars
                     if data:
-                        data_string = data.decode("utf8")
-                        datas = data_string.split()
-                        if len(datas) == 9:
-                            self.sensorsValues[0] = (int(datas[1]) - int(datas[0])) / 1024
-                            self.sensorsValues[1] = (int(datas[3]) - int(datas[2])) / 1024
-                            self.sensorsValues[2] = (int(datas[5]) - int(datas[4])) / 1024
-                            self.sensorsValues[3] = (int(datas[7]) - int(datas[6])) / 1024
-                            button_value = int(datas[8])
-                            if self.buttonState == 1 and button_value == 0:
-                                self.clicked.emit()
-                                self.buttonState = 0
-                            elif self.buttonState == 0 and button_value == 1:
-                                self.buttonState = 1
+                        try :
+                            data_string = data.decode("utf8")
+                            datas = data_string.split()
+                            #print('arduino datas', datas)
+                            if len(datas) == 9:
+                                self.sensorsValues[0] = (int(datas[1]) - int(datas[0])) / 1024
+                                self.sensorsValues[1] = (int(datas[3]) - int(datas[2])) / 1024
+                                self.sensorsValues[2] = (int(datas[5]) - int(datas[4])) / 1024
+                                self.sensorsValues[3] = (int(datas[7]) - int(datas[6])) / 1024
+                                button_value = int(datas[8])
+                                if self.buttonState == 1 and button_value == 0:
+                                    self.clicked.emit()
+                                    self.buttonState = 0
+                                elif self.buttonState == 0 and button_value == 1:
+                                    self.buttonState = 1
 
-                        else:
-                            print('not enough data, needs 8 arguments')
+                            else:
+                                print('not enough data, needs 8 arguments')
+                        except UnicodeDecodeError:
+                            pass
                 except(SerialException):
                     self.stop()
 
@@ -92,6 +98,8 @@ class ArduinoController(QObject):
     def start(self):
         self.arduino = Serial(port=self.arduino_port, baudrate=9600, timeout=0.2)
         self.alive = True
+        if self.thread is None or not self.thread.is_alive():
+            self.thread = Thread(target=self.readSerial, daemon=True)
+            self.thread.start()
         self.timer.start(self.update_in_millis)
-        self.thread.start()
         self.connection.emit(True)
