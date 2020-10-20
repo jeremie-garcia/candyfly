@@ -9,7 +9,7 @@
   "horizontal": 1.0,
   "vertical": 1.0,
   "rotation": 90,
-  "mode": "discret",
+  "mode": "Arduino Discret",
   "calibration": {
     "up": [
       0.23,

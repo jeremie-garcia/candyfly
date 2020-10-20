@@ -43,6 +43,7 @@ if __name__ == '__main__':
                     while keep_flying:
                         _left = 0
                         _right = 0
+                        _front = 0
 
                         if state == 0:
                             # close objects detection

@@ -1,23 +1,23 @@
 {
   "axes": [
     true,
-    false,
-    false,
+    true,
+    true,
     true
   ],
-  "commentaires": "Contrôle vertical et horizontal avec mode discret.",
-  "horizontal": 0.5,
-  "vertical": 0.5,
-  "rotation": 90.0,
-  "mode": "discret",
+  "commentaires": "Presets pour débuter",
+  "horizontal": 1.0,
+  "vertical": 1.0,
+  "rotation": 90,
+  "mode": "Arduino Continu",
   "calibration": {
     "up": [
       0.0,
-      1.0
+      0.98
     ],
     "down": [
       0.0,
-      1.0
+      0.98
     ],
     "clock": [
       0.0,
@@ -25,25 +25,25 @@
     ],
     "anticlock": [
       0.0,
-      1.0
+      0.98
     ],
     "front": [
       0.0,
-      1.0
+      0.95
     ],
     "back": [
       0.0,
-      1.0
+      0.95
     ],
     "right": [
       0.0,
-      1.0
+      0.95
     ],
     "left": [
       0.0,
-      1.0
+      0.98
     ]
   },
-  "discrete_threshold": 0.5,
-  "discrete_duration": 1005.78
+  "discrete_threshold": 0,
+  "discrete_duration": 1000
 }

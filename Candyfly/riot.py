@@ -62,6 +62,7 @@ class Riot(QObject):
         #self.euler.emit(args[18], args[19], args[20], args[21])
 
     def start(self):
+        print("riot start")
         if self.osc is not None:
             self.osc.stop_all()
         try:
@@ -78,6 +79,7 @@ class Riot(QObject):
             print('stopped all for keyboard interupt')
 
     def stop(self):
+        print('riot stop')
         self.connection.emit(False)
         self.osc.stop_all()
 

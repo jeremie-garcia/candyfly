@@ -1,13 +1,49 @@
 {
   "axes": [
-    1,
-    0,
-    0,
-    1
+    true,
+    false,
+    false,
+    true
   ],
+  "commentaires": "Presets pour débuter avec mode continu",
   "horizontal": 0.5,
   "vertical": 0.5,
   "rotation": 90,
-  "commentaires": "Presets pour débuter",
-  "mode": "continu"
+  "mode": "Arduino Continu",
+  "calibration": {
+    "up": [
+      0.05,
+      0.95
+    ],
+    "down": [
+      0.05,
+      0.95
+    ],
+    "clock": [
+      0.05,
+      0.95
+    ],
+    "anticlock": [
+      0.05,
+      0.95
+    ],
+    "front": [
+      0.05,
+      0.95
+    ],
+    "back": [
+      0.05,
+      0.95
+    ],
+    "right": [
+      0.05,
+      0.95
+    ],
+    "left": [
+      0.05,
+      0.95
+    ]
+  },
+  "discrete_threshold": 0,
+  "discrete_duration": 1000
 }

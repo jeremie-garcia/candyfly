@@ -8,15 +8,15 @@
   "commentaires": "Contrôle vertical et horizontal avec mode discret.",
   "horizontal": 0.5,
   "vertical": 0.5,
-  "rotation": 90.0,
-  "mode": "discret",
+  "rotation": 90,
+  "mode": "Arduino Discret",
   "calibration": {
     "up": [
-      0.4,
+      0.0,
       1.0
     ],
     "down": [
-      0.4,
+      0.0,
       1.0
     ],
     "clock": [
@@ -36,14 +36,14 @@
       1.0
     ],
     "right": [
-      0.28,
-      0.54
+      0.0,
+      1.0
     ],
     "left": [
-      0.4,
-      0.66
+      0.0,
+      1.0
     ]
   },
-  "discrete_threshold": 0.5,
-  "discrete_duration": 1005.78
+  "discrete_threshold": 0,
+  "discrete_duration": 1005
 }

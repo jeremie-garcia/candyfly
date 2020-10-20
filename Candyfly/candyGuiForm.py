@@ -262,7 +262,9 @@ class CandyWinForm(QMainWindow):
         self.ui.discrete_treshold_sld.valueChanged.connect(self.discrete_threshold_changed)
         self.ui.discrete_treshold_spin.valueChanged.connect(self.discrete_threshold_changed)
 
+        self.ui.drone_refresh_btn.clicked.connect(lambda: self.ui.take_off_btn.setEnabled(True))
         self.ui.drone_refresh_btn.clicked.connect(self.refreshDroneAsked.emit)
+
         self.ui.arduino_refresh_btn.clicked.connect(self.refreshArduinoAsked.emit)
         self.ui.riot_refresh_button.clicked.connect(self.refreshRiotAsked.emit)
 
@@ -285,17 +287,22 @@ class CandyWinForm(QMainWindow):
 
     def process_takeoff_land_req_click(self):
         if self.is_flying:
+            self.ui.take_off_btn.setEnabled(False)
             self.ask_land.emit()
         else:
+            self.ui.take_off_btn.setEnabled(False)
             self.ask_take_off.emit()
 
+
     def update_is_flying(self, is_flying):
-        print('is drone flying ?' , is_flying)
+        print('is drone flying ?', is_flying)
         self.is_flying = is_flying
         if is_flying:
             self.ui.icon1.addPixmap(QPixmap("img/land.png"))
+            self.ui.take_off_btn.setEnabled(True)
         else:
             self.ui.icon1.addPixmap(QPixmap("img/takeoff.png"))
+            self.ui.take_off_btn.setEnabled(True)
 
     def display_processed_inputs(self, _up, _rotate, _front, _right):
         self.z_axis.display(_up)
@@ -426,9 +433,10 @@ class CandyWinForm(QMainWindow):
         return self.ui.control_group.checkedButton().text()
 
     def set_control_mode(self, _mode):
+        print('set control mode', _mode)
         if _mode == "Arduino Continu":
             self.ui.arduino_continous_radio.setChecked(True)
-        elif _mode == " Arduino Discret":
+        elif _mode == "Arduino Discret":
             self.ui.arduino_discrete_radio.setChecked(True)
         elif _mode == "Riot Rotation" :
             self.ui.riot_spin_radio.setChecked(True)

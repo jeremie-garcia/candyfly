@@ -1,15 +1,14 @@
 from threading import Thread
 
-from PyQt5.QtCore import pyqtSignal, QObject, QTimer
+from PyQt5.QtCore import pyqtSignal, QObject, QTimer, pyqtSlot
 from serial import Serial, SerialException
 from serial.tools.list_ports import comports
 
 
 def find_available_arduinos():
-    ports = list(comports(False))
     arduino_ports = [
         p.device
-        for p in comports()
+        for p in comports(False)
         if (("usb" or "tty" or "arduino") in str(p.device).lower()) or ("arduino" in str(p.description).lower())
     ]
     return arduino_ports
@@ -91,11 +90,13 @@ class ArduinoController(QObject):
             self.timer.run()
 
     def stop(self):
+        print('arduino stop')
         self.alive = False
         self.timer.stop()
         self.connection.emit(False)
 
     def start(self):
+        print('arduino start')
         self.arduino = Serial(port=self.arduino_port, baudrate=9600, timeout=0.2)
         self.alive = True
         if self.thread is None or not self.thread.is_alive():
