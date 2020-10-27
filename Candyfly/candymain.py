@@ -1,15 +1,15 @@
 import io
 import json
+import os
 
+from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QFileDialog, QAction
 
-from arduino import *
-from candyGuiForm import CandyWinForm
-from riot import *
-from crazydrone import *
-
-RIOT_ID = 1
+from arduino.arduino import find_available_arduinos, ArduinoController
+from drones.ardrone import ARDrone
+from drones.crazydrone import find_available_drones, CrazyDrone
+from ui.candyGui import CandyWinForm
 
 MODE_AR_CONT = "Arduino Continu"
 MODE_AR_DISCONT = "Arduino Discret"
@@ -56,7 +56,7 @@ class CandyFly(QApplication):
         self.candyWin = CandyWinForm()
         self.set_icon()
         self.candyWin.show()
-        self.candyWin.setGeometry(0, 0, 1200, 800)
+        self.candyWin.setGeometry(0, 0, 1200, 950)
 
         exit_action = QAction('Quit', self)
         exit_action.triggered.connect(self.quit)
@@ -66,8 +66,6 @@ class CandyFly(QApplication):
 
         self.drone = None
         self.arduino = None
-        self.is_riot = False
-        self.riot = None
 
         calibration = self.candyWin.get_calibration()
         self.calibration_values = [calibration['up'], calibration['down'], calibration['clock'],
@@ -85,7 +83,6 @@ class CandyFly(QApplication):
         self.discrete_mode_timer_tick = 100  # ms
 
         self.candyWin.refreshArduinoAsked.connect(self.init_arduino)
-        self.candyWin.refreshRiotAsked.connect(self.init_riot)
         self.candyWin.refreshDroneAsked.connect(self.init_drone_connection)
 
         self.candyWin.presetChanged.connect(self.load_params_from_file)
@@ -98,11 +95,10 @@ class CandyFly(QApplication):
         self.candyWin.ask_take_off.connect(self.take_off)
 
         self.candyWin.control_changed.connect(self.update_control_mode)
-
+        self.candyWin.drone_changed.connect(self.init_drone_connection)
         # init resources
         self.init_arduino()
         self.init_drone_connection()
-        self.init_riot()
 
         # init values to default
         self.candyWin.update_battery_level(0)
@@ -111,6 +107,8 @@ class CandyFly(QApplication):
         script_dir = get_script_dir()
         self.presets_path = script_dir + os.path.sep + 'presets'
         self.candyWin.populate_presets(self.presets_path)
+
+
 
         self.set_icon()
         sys.exit(self.exec_())
@@ -163,8 +161,6 @@ class CandyFly(QApplication):
             self.drone.stop()
         if self.arduino:
             self.arduino.stop()
-        if self.riot:
-            self.riot.stop()
 
     def set_icon(self):
         script_dir = get_script_dir()
@@ -181,6 +177,9 @@ class CandyFly(QApplication):
             self.set_params(data)
         else:
             self.set_params({})
+
+        # testing
+        self.process_arduino_sensors(1, 0.5, 0.5, 0.2)
 
     def save_as(self):
         # save as button
@@ -238,6 +237,10 @@ class CandyFly(QApplication):
         if "discrete_threshold" in params:
             discrete_threshold = params["discrete_threshold"]
 
+        drone_type = 'Crazyflie'
+        if "drone_type" in params:
+            drone_type = params["drone_type"]
+
         self.candyWin.set_axes(axes)
         self.candyWin.set_max_horiz_speed(horizontal)
         self.candyWin.set_max_vert_speed(vertical)
@@ -248,6 +251,7 @@ class CandyFly(QApplication):
         self.update_control_mode(mode)
         self.candyWin.set_discrete_duration(discrete_duration)
         self.candyWin.set_discrete_threshold(discrete_threshold)
+        self.candyWin.set_drone_type(drone_type)
 
     def get_params(self):
         json_obj = {"axes": self.candyWin.get_axes(),
@@ -259,18 +263,33 @@ class CandyFly(QApplication):
                     "calibration": self.candyWin.get_calibration(),
                     "discrete_threshold": self.candyWin.get_discrete_threshold(),
                     "discrete_duration": self.candyWin.get_discrete_duration(),
+                    "drone_type": self.candyWin.get_drone_type(),
                     }
         return json_obj
 
     def init_drone_connection(self):
         if self.drone:
             self.drone.stop()
-        available = []
-        available = find_available_drones()
-        print("Available drones " + str(available))
-        if len(available) > 0:
-            self.drone = CrazyDrone(available[0][0])
 
+        self.drone = None
+
+        if self.candyWin.get_drone_type() == "Crazyflie":
+            available = []
+            available = find_available_drones()
+            print("Available Crazyflies drones " + str(available))
+            if len(available) > 0:
+                self.drone = CrazyDrone(available[0][0])
+            else:
+                print('No Crazyflies found, Refresh')
+
+        elif self.candyWin.get_drone_type() == "ARDrone":
+            drone = ARDrone()
+            if drone.success:
+                self.drone = drone
+            else:
+                print('No ARDrone found, Refresh')
+
+        if self.drone is not None:
             # init values
             self.drone.set_max_horizontal_speed(self.candyWin.get_max_horiz_speed())
             self.drone.set_max_vertical_speed(self.candyWin.get_max_vert_speed())
@@ -282,11 +301,6 @@ class CandyFly(QApplication):
             self.candyWin.verticalSpeedValueChanged.connect(self.drone.set_max_vertical_speed)
             self.candyWin.horizontalSpeedValueChanged.connect(self.drone.set_max_horizontal_speed)
             self.candyWin.rotationSpeedValueChanged.connect(self.drone.set_max_rotation_speed)
-
-            self.drone.is_flying_signal.connect(self.candyWin.update_is_flying)
-        else:
-            self.drone = None
-            print('No Crazyflies found, Refresh')
 
     def process_takeoff_button(self):
         if not (self.drone is None):
@@ -311,55 +325,6 @@ class CandyFly(QApplication):
         else:
             self.arduino = None
 
-    def init_riot(self):
-        if self.riot:
-            self.riot.stop()
-        self.riot = Riot(RIOT_ID)
-        self.riot.connection.connect(self.candyWin.update_riot_connection)
-        self.riot.start()
-
-    def process_acc(self, _x, _y, _z):
-        norm, x, y, z = self.riot.intensity(_x, _y, _z)
-
-        #print('intensity', norm, _x, _y, _z)
-        norm = min(norm / 5, 100)
-        self.candyWin.update_riot_energy_gauge(norm)
-
-        if self.drone is not None and self.drone.is_flying() and self.candyWin.get_control_mode() == MODE_RIOT_NRJ:
-            height = self.drone.motion_commander._thread.get_height()
-            v_min = -0.1
-            v_max = 1
-            up_speed = (norm / 300) * (v_max - v_min) + v_min
-            up_speed = max(min(up_speed, v_max), v_min)
-
-            if height < 0.2:
-                up_speed = max(0, up_speed)
-
-            print(up_speed)
-            self.drone.process_motion(up_speed, 0, 0, 0)
-
-    def process_gyro(self, _gx, _gy, _gz):
-        x, y, z = self.riot.spin_filtered(_gx, _gy, _gz)
-        norm = spin(_gx, _gy, _gz)
-        norm = min(norm * 10, 100)
-
-        self.candyWin.update_riot_spin_gauge(norm)
-
-        if self.drone is not None and self.drone.is_flying() and self.candyWin.get_control_mode() == MODE_RIOT_SPIN:
-            height = self.drone.motion_commander._thread.get_height()
-
-            up_speed = 0
-            v_min = -0.1
-            v_max = 1
-            up_speed = (norm / 300) * (v_max - v_min) + v_min
-            up_speed = max(min(up_speed, v_max), v_min)
-
-            if height < 0.2:
-                up_speed = max(0, up_speed)
-
-            print(up_speed)
-            self.drone.process_motion(up_speed, 0, 0, 0)
-
     def update_calibration(self):
         calib = self.candyWin.get_calibration()
         self.calibration_values = [calib['up'], calib['down'], calib['clock'], calib['anticlock'], calib['front'],
@@ -372,20 +337,6 @@ class CandyFly(QApplication):
         if self.drone is not None:
             self.drone.process_motion(0, 0, 0, 0)
 
-        if self.riot is not None:
-            try:
-                self.riot.gyro.disconnect()
-                self.riot.acc.disconnect()
-            except TypeError:
-                pass
-
-        if self.arduino is not None:
-            try:
-                self.arduino.sensors.disconnect()
-                self.arduino.clicked.disconnect()
-            except TypeError:
-                pass
-
         if 'Arduino' in _mode:
             if self.arduino is not None:
                 self.arduino.start()
@@ -394,14 +345,8 @@ class CandyFly(QApplication):
             else:
                 print('No Arduino device found... refresh')
 
-        if _mode == MODE_AR_CONT:
-            pass
-        elif _mode == MODE_AR_DISCONT:
+        if _mode == MODE_AR_DISCONT:
             self.discrete_mode_timer.start(self.discrete_mode_timer_tick)
-        elif _mode == MODE_RIOT_NRJ:
-            self.riot.acc.connect(self.process_acc)
-        elif _mode == MODE_RIOT_SPIN:
-            self.riot.gyro.connect(self.process_gyro)
 
     def take_off(self):
         if not (self.drone is None):

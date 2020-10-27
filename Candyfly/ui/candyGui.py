@@ -5,11 +5,12 @@ from PyQt5.QtGui import QColor, QPen, QBrush, QPainter, QPixmap, QPolygonF
 from PyQt5.QtWidgets import QWidget, QMainWindow, QGraphicsScene, QGraphicsRectItem, \
     QGraphicsEllipseItem, QGraphicsPixmapItem, QGraphicsPolygonItem, QFileSystemModel, QAbstractItemView
 
-from Ui_MainWindow import Ui_MainWindow
-from rangeslider import QRangeSlider
+from ui.Ui_candy import Ui_MainWindow
+from ui.rangeslider import QRangeSlider
 
 BG_COL = Qt.black
 FG_COL = Qt.lightGray
+FG_COL_2 = Qt.darkGray
 ON_COL = Qt.darkGreen
 
 FG_PEN = QPen(FG_COL)
@@ -89,6 +90,12 @@ class VerticalAxis(QGraphicsPolygonItem):
         self.value_point.setParentItem(self)
         self.value_point.setZValue(10)
 
+        self.value_point_raw = QGraphicsEllipseItem(width / 2 - 3, height / 2 - 3, 6, 6)
+        self.value_point_raw.setPen(BG_PEN)
+        self.value_point_raw.setBrush(FG_COL_2)
+        self.value_point_raw.setParentItem(self)
+        self.value_point_raw.setZValue(9)
+
         script_dir = os.path.dirname(os.path.realpath(__file__))
         icon_top_path = script_dir + os.path.sep + "img" + os.path.sep + _icon_top_file
         icon_bottom_path = script_dir + os.path.sep + "img" + os.path.sep + _icon_bottom_file
@@ -128,6 +135,14 @@ class VerticalAxis(QGraphicsPolygonItem):
         _y = (1 - value) * h / 2
         # scale input between 1 and -1 between 0 (1) and height
         self.value_point.setRect(_x, _y - 5, 10, 10)
+
+    def display_raw(self, value):
+        _x = self.width / 2 - 3
+        h = self.height
+
+        _y = (1 - value) * h / 2
+        # scale input between 1 and -1 between 0 (1) and height
+        self.value_point_raw.setRect(_x, _y - 3, 6, 6)
 
 
 class RectSelector(QGraphicsRectItem):
@@ -174,6 +189,7 @@ class CandyWinForm(QMainWindow):
     discrete_threshold_changed = pyqtSignal(int)
     discrete_duration_changed = pyqtSignal(int)
     control_changed = pyqtSignal(str)
+    drone_changed = pyqtSignal(str)
 
     calibrationChanged = pyqtSignal()
 
@@ -266,9 +282,9 @@ class CandyWinForm(QMainWindow):
         self.ui.drone_refresh_btn.clicked.connect(self.refreshDroneAsked.emit)
 
         self.ui.arduino_refresh_btn.clicked.connect(self.refreshArduinoAsked.emit)
-        self.ui.riot_refresh_button.clicked.connect(self.refreshRiotAsked.emit)
 
         self.ui.control_group.buttonClicked.connect(lambda button: self.control_changed.emit(button.text()))
+        self.ui.drone_group.buttonClicked.connect(lambda button: self.drone_changed.emit(button.text()))
 
         # process speed sliders (handle double values)
         self.ui.vert_speed_spin.valueChanged.connect(self.verticalSpeedValueChanged)
@@ -282,27 +298,8 @@ class CandyWinForm(QMainWindow):
         self.ui.rot_speed_spin.valueChanged.connect(self.ui.rot_speed_sld.setValue)
         self.ui.rot_speed_sld.valueChanged.connect(self.ui.rot_speed_spin.setValue)
 
-        self.is_flying = False
-        self.ui.take_off_btn.clicked.connect(self.process_takeoff_land_req_click)
-
-    def process_takeoff_land_req_click(self):
-        if self.is_flying:
-            self.ui.take_off_btn.setEnabled(False)
-            self.ask_land.emit()
-        else:
-            self.ui.take_off_btn.setEnabled(False)
-            self.ask_take_off.emit()
-
-
-    def update_is_flying(self, is_flying):
-        print('is drone flying ?', is_flying)
-        self.is_flying = is_flying
-        if is_flying:
-            self.ui.icon1.addPixmap(QPixmap("img/land.png"))
-            self.ui.take_off_btn.setEnabled(True)
-        else:
-            self.ui.icon1.addPixmap(QPixmap("img/takeoff.png"))
-            self.ui.take_off_btn.setEnabled(True)
+        self.ui.take_off_btn.clicked.connect(lambda : self.ask_take_off.emit())
+        self.ui.land_btn.clicked.connect(lambda : self.ask_land.emit())
 
     def display_processed_inputs(self, _up, _rotate, _front, _right):
         self.z_axis.display(_up)
@@ -311,7 +308,10 @@ class CandyWinForm(QMainWindow):
         self.right_axis.display(_right)
 
     def display_raw_inputs(self, _up, _rotate, _front, _right):
-        pass
+        self.z_axis.display_raw(_up)
+        self.rotation_axis.display_raw(_rotate)
+        self.front_axis.display_raw(_front)
+        self.right_axis.display_raw(_right)
 
     def set_simplified(self, is_simplified):
         if is_simplified:
@@ -381,16 +381,6 @@ class CandyWinForm(QMainWindow):
         self.ui.drone_battery_gauge.setStyleSheet(style)
         self.ui.drone_battery_gauge.setFormat("{:.2f}".format(battery_val) + "v (%p%)")
 
-    def update_is_flying(self, is_flying):
-        self.is_flying = is_flying
-
-        if is_flying:
-            self.ui.take_off_btn.setStyleSheet(LAND_BUTTON_STYLE_SHEET)
-            self.ui.take_off_btn.setText('Atterrissage')
-        else:
-            self.ui.take_off_btn.setStyleSheet(TAKEOFF_BUTTON_STYLE_SHEET)
-            self.ui.take_off_btn.setText('Décollage')
-
     def update_drone_connection(self, connection_status):
         if connection_status == "on":
             self.ui.drone_status_lbl.setStyleSheet(STATUS_ON_STYLE)
@@ -401,18 +391,6 @@ class CandyWinForm(QMainWindow):
 
         if connection_status != "on":
             self.update_battery_level(0)
-
-    def update_riot_connection(self, is_connected):
-        if is_connected:
-            self.ui.riot_status_lbl.setStyleSheet(STATUS_ON_STYLE)
-        else:
-            self.ui.riot_status_lbl.setStyleSheet(STATUS_OFF_STYLE)
-
-    def update_riot_energy_gauge(self, level):
-        self.ui.riot_energy_gauge.setValue(level)
-
-    def update_riot_spin_gauge(self, level):
-        self.ui.riot_spin_gauge.setValue(level)
 
     def update_arduino_connection(self, is_connected):
         if is_connected:
@@ -433,18 +411,19 @@ class CandyWinForm(QMainWindow):
         return self.ui.control_group.checkedButton().text()
 
     def set_control_mode(self, _mode):
-        print('set control mode', _mode)
         if _mode == "Arduino Continu":
             self.ui.arduino_continous_radio.setChecked(True)
-        elif _mode == "Arduino Discret":
+        else :
             self.ui.arduino_discrete_radio.setChecked(True)
-        elif _mode == "Riot Rotation" :
-            self.ui.riot_spin_radio.setChecked(True)
-        elif _mode == "Riot Energie":
-            self.ui.riot_energy_radio.setChecked(True)
+
+    def get_drone_type(self):
+        return self.ui.drone_group.checkedButton().text()
+
+    def set_drone_type(self, _type):
+        if _type == "Crazyflie":
+            self.ui.crazy_radio.setChecked(True)
         else:
-            #default mode
-            self.ui.arduino_continous_radio.setChecked(True)
+            self.ui.ar_radio.setChecked(True)
 
     def set_comments(self, comments):
         self.ui.comment_textEdit.setText(comments)

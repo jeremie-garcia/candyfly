@@ -56,7 +56,7 @@ if len(available) > 0:
 
 
     def start_control():
-        print('connected to drone')
+        print('connected to drones')
         app.aboutToQuit.connect(drone.land)
         riot.acc.connect(process_acc)
 
