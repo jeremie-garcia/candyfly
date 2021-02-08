@@ -56,7 +56,7 @@ class CandyFly(QApplication):
         self.candyWin = CandyWinForm()
         self.set_icon()
         self.candyWin.show()
-        self.candyWin.setGeometry(0, 0, 1200, 950)
+        self.candyWin.setGeometry(0, 0, 1200, 600)
 
         exit_action = QAction('Quit', self)
         exit_action.triggered.connect(self.quit)
