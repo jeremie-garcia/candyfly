@@ -3,8 +3,6 @@ from oscpy.server import OSCThreadServer
 
 from crazydrone import *
 
-#
-
 def spin(_gx, _gy, _gz):
     return _gx*_gx + _gy*_gy + _gz*_gz
 

@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QApplication, QFileDialog, QAction
 from arduino.arduino import find_available_arduinos, ArduinoController
 from drones.ardrone import ARDrone
 from drones.crazydrone import find_available_drones, CrazyDrone
+from drones.tello import TelloDrone
 from ui.candyGui import CandyWinForm
 
 MODE_AR_CONT = "Arduino Continu"
@@ -289,6 +290,13 @@ class CandyFly(QApplication):
             else:
                 print('No ARDrone found, Refresh')
 
+        elif self.candyWin.get_drone_type() == "Tello":
+            drone = TelloDrone()
+            if drone.success:
+                self.drone = drone
+            else:
+                print('No Tello found, Refresh')
+
         if self.drone is not None:
             # init values
             self.drone.set_max_horizontal_speed(self.candyWin.get_max_horiz_speed())
@@ -342,6 +350,7 @@ class CandyFly(QApplication):
                 self.arduino.start()
                 self.arduino.sensors.connect(self.process_arduino_sensors)
                 self.arduino.clicked.connect(self.process_takeoff_button)
+                self.arduino.clicked.connect(lambda : print('arduino clicked for takeoff'))
             else:
                 print('No Arduino device found... refresh')
 
