@@ -422,8 +422,10 @@ class CandyWinForm(QMainWindow):
     def set_drone_type(self, _type):
         if _type == "Crazyflie":
             self.ui.crazy_radio.setChecked(True)
-        else:
+        elif _type == "ARDrone":
             self.ui.ar_radio.setChecked(True)
+        else:
+            self.ui.tello_radio.setChecked(True)
 
     def set_comments(self, comments):
         self.ui.comment_textEdit.setText(comments)

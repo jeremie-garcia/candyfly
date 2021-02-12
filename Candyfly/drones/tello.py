@@ -1,85 +1,150 @@
+import re
+import socket
 import sys
 from threading import Thread
 
-from PyQt5.QtCore import QObject, QThread, QCoreApplication
-from time import sleep
-
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QPushButton
 
 from drones.drone import Drone
-import socket
-import re
 
 INTERVAL = 1
+
+
+def clamp(x):
+    return round(min(100, max(-100, x)))
+
 
 class TelloDrone(Drone):
 
     def __init__(self):
         super().__init__()
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        local_ip = ''
-        local_port = 8890
-        self.sock.bind((local_ip, local_port))
 
-        self.connection.emit("progress")
-        print("connecting to tello drone")
-        self.tello_address = ('192.168.10.1', 8889)
-        self.sock.sendto('command'.encode(encoding="utf-8"), self.tello_address)
-        self.connection.emit("on")
-        print('connected')
+        self.local_ip = ''
+
+        # socket for receiving cmd ack
+        self.cmd_port = 8889
+        self.cmd_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.cmd_sock.bind((self.local_ip, self.cmd_port))
+
+        # socket for receiving state values
+        self.state_port = 8890
+        self.state_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.state_sock.bind((self.local_ip, self.state_port))
+
+        self.tello_address = ('192.168.10.1', self.cmd_port)
+
+        self.running = True
+        # thread for receiving cmd ack
+        self.receive_cmd_thread = Thread(target=self._receive_cmd_thread)
+        self.receive_cmd_thread.daemon = True
+        self.receive_cmd_thread.start()
+
+        # thread for receiving state
+        self.receive_state_thread = Thread(target=self._receive_state_thread)
+        self.receive_state_thread.daemon = True
+        self.receive_state_thread.start()
+
+        self.state_response = ""
+        self.cmd_response = ""
+        self.cmd_state = ""
+        self._is_flying = False
+        self.prev_cmd = ""
 
 
-        self.running = False
+    def send_command(self, cmd):
+        self.cmd_sock.sendto(cmd.encode(encoding="utf-8"), self.tello_address)
 
-    def start_logger(self):
-        self.thread = Thread(target=self.read_socket, daemon=True)
-        self.thread.start()
+    def init(self):
+        self.cmd_state = "cmd"
+        self.connection.emit("off")
+        self.send_command('command')
 
     def take_off(self):
-        self.sock.sendto('takeoff'.encode(encoding="utf-8"), self.tello_address)
+        if not self.is_flying():
+            self.cmd_state = "takeoff"
+            self.send_command('takeoff')
 
     def land(self):
-        self.sock.sendto('land'.encode(encoding="utf-8"), self.tello_address)
+        self.cmd_state = "land"
+        self.send_command('land')
 
     def stop(self):
-        self.sock.sendto('land'.encode(encoding="utf-8"), self.tello_address)
-        self.running.stop()
-        self.sock.close()
+        self.land()
+        self.running = False
+        self.state_sock.close()
+        self.cmd_sock.close()
 
-    def read_socket(self):
-        self.running = True
-        try:
-            while self.running:
-                response, ip = self.sock.recvfrom(1024)
-                response = response.decode('utf-8')
-                if response == 'ok':
-                    continue
-                bat = re.search(r"bat:(\d*)", response).group()[4:]
-                self.batteryValue.emit(int(bat))
-                sleep(INTERVAL)
-        except KeyboardInterrupt:
-            print('stopped')
+    def _receive_cmd_thread(self):
+        """Listen to responses from the Tello.
+        Runs as a thread, sets self.response to whatever the Tello last returned.
+        """
+        while self.running:
+            try:
+                rep, ip = self.cmd_sock.recvfrom(1024)
+                self.cmd_response = rep.decode('utf8')
+                if self.cmd_response == 'ok':
+                    if self.cmd_state == 'cmd':
+                        print('tello connected')
+                        self.connection.emit('on')
+                    if self.cmd_state == 'takeoff':
+                        self._is_flying = True
+                        self.is_flying_signal.emit(True)
+                    if self.cmd_state == 'land':
+                        self._is_flying = False
+                        self.is_flying_signal.emit(False)
 
+                    print("command", self.cmd_state, "ACK")
+                else:
+                    print("command,", self.cmd_state, 'error', self.cmd_response)
 
+                self.cmd_state = ""
+            except socket.error as exc:
+                print("CMD ERROR: %s" % exc)
+
+    def _receive_state_thread(self):
+        """Listen to responses from the Tello.
+        Runs as a thread, sets self.response to whatever the Tello last returned.
+        """
+        while self.running:
+            try:
+                rep, ip = self.state_sock.recvfrom(1024)
+                self.state_response = rep.decode('utf8')
+                bat = re.search(r"bat:(\d*)", self.state_response).group()[4:]
+                self.batteryValue.emit(int(bat) * 0.043)  # hack...
+            except socket.error as exc:
+                print("CMD ERROR: %s" % exc)
+
+    def is_flying(self):
+        return self._is_flying
 
     def process_motion(self, _up, _rotate, _front, _right):
         '''
         Need to be in -100 100 range for each commands
         '''
-        velocity_up_down = _up * 100 * self.max_vert_speed
-        velocity_yaw = _rotate * 100 * self.max_rotation_speed
-        velocity_front_back = _front * 100 * self.max_horiz_speed
-        velocity_left_right = _right * -1 * 100 * self.max_horiz_speed
-        cmd = str(velocity_left_right, velocity_front_back, velocity_up_down, velocity_yaw).encode(encoding="utf-8")
-        print("TELLO to " , cmd)
-        self.sock.sendto(cmd, self.tello_address)
+
+        if self.cmd_state != "land" and self.cmd_state != "takeoff":
+            velocity_up_down = clamp(_up * 50 * self.max_vert_speed)
+            velocity_yaw = clamp(_rotate/180 * 100 * self.max_rotation_speed)
+            velocity_front_back = clamp(_front * 50 * self.max_horiz_speed)
+            velocity_left_right = clamp(_right * 50 * self.max_horiz_speed)
+            cmd = f"rc {velocity_left_right} {velocity_front_back} {velocity_up_down} {velocity_yaw}"
+            #print("TELLO:", cmd)
+            self.cmd_state = "rc"
+            self.send_command(cmd)
+
 
 if __name__ == "__main__":
     app = QApplication([])
     tello = TelloDrone()
-    tello.start_logger()
-    tello.batteryValue.connect(print)
-    tello.take_off()
-    sleep(8)
-    tello.land()
+    button = QPushButton("start")
+    stp_button = QPushButton("stop")
+    button.clicked.connect(tello.take_off)
+    stp_button.clicked.connect(tello.land)
+    button.show()
+    stp_button.show()
+    tello.batteryValue.connect(lambda status: print('batt', status))
+    tello.is_flying_signal.connect(lambda status: print('flying?', status))
+    tello.connection.connect(lambda status: print('connection', status))
+    tello.init()
     sys.exit(app.exec_())
+    tello.stop()

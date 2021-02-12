@@ -238,7 +238,7 @@ class CandyFly(QApplication):
         if "discrete_threshold" in params:
             discrete_threshold = params["discrete_threshold"]
 
-        drone_type = 'Crazyflie'
+        drone_type = 'Tello'
         if "drone_type" in params:
             drone_type = params["drone_type"]
 
@@ -291,8 +291,8 @@ class CandyFly(QApplication):
                 print('No ARDrone found, Refresh')
 
         elif self.candyWin.get_drone_type() == "Tello":
-            drone = TelloDrone()
-            if drone.success:
+            if True:
+                drone = TelloDrone()
                 self.drone = drone
             else:
                 print('No Tello found, Refresh')
@@ -309,6 +309,7 @@ class CandyFly(QApplication):
             self.candyWin.verticalSpeedValueChanged.connect(self.drone.set_max_vertical_speed)
             self.candyWin.horizontalSpeedValueChanged.connect(self.drone.set_max_horizontal_speed)
             self.candyWin.rotationSpeedValueChanged.connect(self.drone.set_max_rotation_speed)
+            self.drone.init()
 
     def process_takeoff_button(self):
         if not (self.drone is None):
@@ -391,7 +392,7 @@ class CandyFly(QApplication):
         if not axes[3]:
             _right = 0
 
-        if self.drone is not None:
+        if self.drone is not None and self.drone.is_flying():
             # route depending on mode (discrete or continous)
             if self.candyWin.get_control_mode() == MODE_AR_DISCONT:
                 self.process_discrete_motion(_up, _rotate, _front, _right)

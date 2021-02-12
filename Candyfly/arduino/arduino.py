@@ -19,7 +19,7 @@ class ArduinoController(QObject):
     sensors = pyqtSignal(float, float, float, float)
     clicked = pyqtSignal()
 
-    def __init__(self, _port, _stream=False, _update_in_millis=50):
+    def __init__(self, _port, _stream=False, _update_in_millis=100):
         super().__init__()
         print("Opening Arduino on port " + _port)
         self.update_in_millis = _update_in_millis

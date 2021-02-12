@@ -20,7 +20,7 @@ class CrazyDrone(Drone):
 
     def __init__(self, link_uri):
         super().__init__()
-
+        self.link_uri = link_uri
         cache = "./cache"
         if getattr(sys, 'frozen', False):
             cache = sys._MEIPASS + os.path.sep + "cache"
@@ -44,11 +44,13 @@ class CrazyDrone(Drone):
 
         print('Connecting to %s' % link_uri)
 
-        # Try to connect to the Crazyflie
-        self._cf.open_link(link_uri)
 
         # Variable used to keep main loop occupied until disconnect
         self.is_connected = True
+
+    def init(self):
+        # Try to connect to the Crazyflie
+        self._cf.open_link(self.link_uri)
 
     def _connected(self, link_uri):
         """ This callback is called form the Crazyflie API when a Crazyflie

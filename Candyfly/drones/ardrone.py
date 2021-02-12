@@ -14,7 +14,6 @@ class ARDrone(Drone):
         self.connection.emit("progress")
         self.success = self.bebop.connect(5)
         if self.success:
-            self.connection.emit("on")
             self.bebop.set_max_altitude(20)
             self.bebop.set_max_distance(20)
             self.bebop.set_max_rotation_speed(180)
@@ -29,7 +28,11 @@ class ARDrone(Drone):
             print("refresh....")
             self.connection.emit("off")
 
-
+    def init(self):
+        if self.success:
+            self.connection.emit("on")
+        else:
+            self.connection.emit("off")
 
     def take_off(self):
         self.bebop.safe_takeoff(5)
