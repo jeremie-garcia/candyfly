@@ -7,8 +7,6 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QFileDialog, QAction
 
 from arduino.arduino import find_available_arduinos, ArduinoController
-from drones.ardrone import ARDrone
-from drones.crazydrone import find_available_drones, CrazyDrone
 from drones.tello import TelloDrone
 from ui.candyGui import CandyWinForm
 
@@ -275,20 +273,10 @@ class CandyFly(QApplication):
         self.drone = None
 
         if self.candyWin.get_drone_type() == "Crazyflie":
-            available = []
-            available = find_available_drones()
-            print("Available Crazyflies drones " + str(available))
-            if len(available) > 0:
-                self.drone = CrazyDrone(available[0][0])
-            else:
-                print('No Crazyflies found, Refresh')
+           print('No Crazyflies found, Refresh')
 
         elif self.candyWin.get_drone_type() == "ARDrone":
-            drone = ARDrone()
-            if drone.success:
-                self.drone = drone
-            else:
-                print('No ARDrone found, Refresh')
+           print('No ARDrone found, Refresh')
 
         elif self.candyWin.get_drone_type() == "Tello":
             if True:
