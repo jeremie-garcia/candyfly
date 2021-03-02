@@ -19,14 +19,14 @@ void loop() {
 
   fsrReadingDown = analogRead(0);
   fsrReadingUp = analogRead(1);
-  fsrReadingYaw_no_clock = analogRead(2);
-  fsrReadingYaw_clock= analogRead(3);
-  fsrReadingBack = analogRead(4);
-  fsrReadingFront = analogRead(5);
-  fsrReadingLeft = analogRead(6);
-  fsrReadingRight = analogRead(7);
+  //fsrReadingYaw_no_clock = analogRead(6);
+  //fsrReadingYaw_clock= analogRead(7);
+  //fsrReadingBack = analogRead(4);
+  //fsrReadingFront = analogRead(5);
+  fsrReadingLeft = analogRead(2);
+  fsrReadingRight = analogRead(3);
   
-  buttonReading = digitalRead(buttonPin);
+  //buttonReading = digitalRead(buttonPin);
 
   Serial.print(fsrReadingDown);
   Serial.print(" ");
