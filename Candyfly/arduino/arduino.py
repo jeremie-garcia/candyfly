@@ -96,9 +96,13 @@ class ArduinoController(QObject):
         self.connection.emit(False)
 
     def start(self):
-        print('arduino start')
-        self.arduino = Serial(port=self.arduino_port, baudrate=9600, timeout=0.2)
-        self.alive = True
+        if not self.alive:
+            print('arduino start')
+            self.arduino = Serial(port=self.arduino_port, baudrate=9600, timeout=0.2)
+            self.alive = True
+            self.connection.emit(True)
+        else:
+            print('arduino already started')
         if self.thread is None or not self.thread.is_alive():
             self.thread = Thread(target=self.readSerial, daemon=True)
             self.thread.start()
