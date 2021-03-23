@@ -107,11 +107,7 @@ class CandyFly(QApplication):
         self.presets_path = script_dir + os.path.sep + 'presets'
         self.candyWin.populate_presets(self.presets_path)
 
-
-
         self.set_icon()
-
-
         #self.candyWin.display_processed_inputs(0,0,0,0)
         sys.exit(self.exec_())
 

@@ -111,7 +111,6 @@ class VerticalAxis(QGraphicsPolygonItem):
         self.bottom.setScale(0.5)
         self.bottom.setOpacity(0.5)
 
-
     def set_active(self, is_active):
         self.active = is_active
         self.update_active()
@@ -172,6 +171,7 @@ class RectSelector(QGraphicsRectItem):
         self.axis1 = _axis1
         self.axis2 = _axis2
 
+
 class SoundPlayer():
     def __init__(self):
         super().__init__()
@@ -199,21 +199,21 @@ class SoundPlayer():
         self.down.play()
 
     def update(self, _up, _rotate, _front, _right):
-        if _up >0:
+        if _up >= 0:
             self.up.setVolume(_up)
             self.down.setVolume(0)
-        elif _up < 0:
+        elif _up <= 0:
             self.up.setVolume(0)
             self.down.setVolume(-_up)
 
-        if _right >0:
+        if _right >= 0:
             self.right.setVolume(_right)
             self.left.setVolume(0)
-        elif _right < 0:
+        elif _right <= 0:
             self.left.setVolume(-_right)
-            self.left.setVolume(0)
+            self.right.setVolume(0)
 
-        print("sounds", self.right.volume(), self.left.volume(), self.up.volume(), self.down.volume())
+        #print("sounds", self.right.volume(), self.left.volume(), self.up.volume(), self.down.volume())
 
 class CandyWinForm(QMainWindow):
     refreshDroneAsked = pyqtSignal()
@@ -341,8 +341,8 @@ class CandyWinForm(QMainWindow):
         self.ui.horiz_speed_sld.valueChanged.connect(lambda val: self.ui.horiz_speed_spin.setValue(val / 100))
         self.ui.rot_speed_spin.valueChanged.connect(self.ui.rot_speed_sld.setValue)
         self.ui.rot_speed_sld.valueChanged.connect(self.ui.rot_speed_spin.setValue)
-        self.ui.take_off_btn.clicked.connect(lambda : self.ask_take_off.emit())
-        self.ui.land_btn.clicked.connect(lambda : self.ask_land.emit())
+        self.ui.take_off_btn.clicked.connect(lambda: self.ask_take_off.emit())
+        self.ui.land_btn.clicked.connect(lambda: self.ask_land.emit())
         self.sndPlayer = SoundPlayer()
 
     def display_processed_inputs(self, _up, _rotate, _front, _right):
@@ -458,7 +458,7 @@ class CandyWinForm(QMainWindow):
     def set_control_mode(self, _mode):
         if _mode == "Arduino Continu":
             self.ui.arduino_continous_radio.setChecked(True)
-        else :
+        else:
             self.ui.arduino_discrete_radio.setChecked(True)
 
     def get_drone_type(self):
@@ -532,7 +532,7 @@ class CandyWinForm(QMainWindow):
         self.ui.presets_listView.setModel(self.file_model)
 
         def load_first_element(val):
-            self.ui.presets_listView.setCurrentIndex(self.file_model.index(0,0,self.ui.presets_listView.rootIndex()))
+            self.ui.presets_listView.setCurrentIndex(self.file_model.index(0, 0, self.ui.presets_listView.rootIndex()))
 
         self.file_model.directoryLoaded.connect(load_first_element)
         self.ui.presets_listView.setSelectionBehavior(QAbstractItemView.SelectRows)
