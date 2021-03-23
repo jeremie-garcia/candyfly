@@ -110,6 +110,9 @@ class CandyFly(QApplication):
 
 
         self.set_icon()
+
+
+        #self.candyWin.display_processed_inputs(0,0,0,0)
         sys.exit(self.exec_())
 
     def update_discrete_threshold(self, _threshold):
@@ -176,9 +179,6 @@ class CandyFly(QApplication):
             self.set_params(data)
         else:
             self.set_params({})
-
-        # testing
-        self.process_arduino_sensors(1, 0.5, 0.5, 0.2)
 
     def save_as(self):
         # save as button

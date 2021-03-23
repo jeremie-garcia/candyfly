@@ -2,8 +2,6 @@
 
 block_cipher = None
 
-#TODO Add hidden libusb dependencies
-
 a = Analysis(['candymain.py'],
              pathex=['/Users/jeremiegarcia/Documents/dev/candyfly/Candyfly'],
              binaries=[],
@@ -30,13 +28,13 @@ if sys.platform == 'win32' or sys.platform == 'win64' or sys.platform == 'linux'
             a.binaries,
             a.zipfiles,
             a.datas,
-            name='Quaver',
+            name='CandyFly',
             debug=False,
             strip=False,
             upx=True,
             runtime_tmpdir=None,
             console=False,
-            icon='assets/icon.ico')
+            icon='img/candy.ico')
 
 # Generate an executable file for OSX
 if sys.platform == 'darwin':

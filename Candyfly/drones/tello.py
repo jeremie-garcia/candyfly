@@ -15,7 +15,6 @@ def clamp(x):
 
 
 class TelloDrone(Drone):
-
     def __init__(self):
         super().__init__()
 

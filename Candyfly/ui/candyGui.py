@@ -1,7 +1,8 @@
 import os
 
-from PyQt5.QtCore import Qt, QPointF, pyqtSignal, QDir
+from PyQt5.QtCore import Qt, QPointF, pyqtSignal, QDir, QUrl
 from PyQt5.QtGui import QColor, QPen, QBrush, QPainter, QPixmap, QPolygonF
+from PyQt5.QtMultimedia import QSoundEffect
 from PyQt5.QtWidgets import QWidget, QMainWindow, QGraphicsScene, QGraphicsRectItem, \
     QGraphicsEllipseItem, QGraphicsPixmapItem, QGraphicsPolygonItem, QFileSystemModel, QAbstractItemView
 
@@ -110,6 +111,7 @@ class VerticalAxis(QGraphicsPolygonItem):
         self.bottom.setScale(0.5)
         self.bottom.setOpacity(0.5)
 
+
     def set_active(self, is_active):
         self.active = is_active
         self.update_active()
@@ -170,6 +172,48 @@ class RectSelector(QGraphicsRectItem):
         self.axis1 = _axis1
         self.axis2 = _axis2
 
+class SoundPlayer():
+    def __init__(self):
+        super().__init__()
+        self.right = QSoundEffect()
+        self.right.setSource(QUrl.fromLocalFile('./sounds/right.wav'))
+        self.right.setLoopCount(QSoundEffect.Infinite)
+        self.left = QSoundEffect()
+        self.left.setSource(QUrl.fromLocalFile('./sounds/left.wav'))
+        self.left.setLoopCount(QSoundEffect.Infinite)
+        self.up = QSoundEffect()
+        self.up.setSource(QUrl.fromLocalFile('./sounds/up.wav'))
+        self.up.setLoopCount(QSoundEffect.Infinite)
+        self.down = QSoundEffect()
+        self.down.setSource(QUrl.fromLocalFile('./sounds/down.wav'))
+        self.down.setLoopCount(QSoundEffect.Infinite)
+
+        self.right.setVolume(0)
+        self.left.setVolume(0)
+        self.up.setVolume(0)
+        self.down.setVolume(0)
+
+        self.right.play()
+        self.left.play()
+        self.up.play()
+        self.down.play()
+
+    def update(self, _up, _rotate, _front, _right):
+        if _up >0:
+            self.up.setVolume(_up)
+            self.down.setVolume(0)
+        elif _up < 0:
+            self.up.setVolume(0)
+            self.down.setVolume(-_up)
+
+        if _right >0:
+            self.right.setVolume(_right)
+            self.left.setVolume(0)
+        elif _right < 0:
+            self.left.setVolume(-_right)
+            self.left.setVolume(0)
+
+        print("sounds", self.right.volume(), self.left.volume(), self.up.volume(), self.down.volume())
 
 class CandyWinForm(QMainWindow):
     refreshDroneAsked = pyqtSignal()
@@ -297,15 +341,16 @@ class CandyWinForm(QMainWindow):
         self.ui.horiz_speed_sld.valueChanged.connect(lambda val: self.ui.horiz_speed_spin.setValue(val / 100))
         self.ui.rot_speed_spin.valueChanged.connect(self.ui.rot_speed_sld.setValue)
         self.ui.rot_speed_sld.valueChanged.connect(self.ui.rot_speed_spin.setValue)
-
         self.ui.take_off_btn.clicked.connect(lambda : self.ask_take_off.emit())
         self.ui.land_btn.clicked.connect(lambda : self.ask_land.emit())
+        self.sndPlayer = SoundPlayer()
 
     def display_processed_inputs(self, _up, _rotate, _front, _right):
         self.z_axis.display(_up)
         self.rotation_axis.display(_rotate)
         self.front_axis.display(_front)
         self.right_axis.display(_right)
+        self.sndPlayer.update(_up, _rotate, _front, _right)
 
     def display_raw_inputs(self, _up, _rotate, _front, _right):
         self.z_axis.display_raw(_up)
