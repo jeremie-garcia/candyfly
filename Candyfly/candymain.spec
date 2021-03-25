@@ -11,7 +11,7 @@ a = Analysis(['candymain.py'],
                     ('sounds', 'sounds')],
              hiddenimports=[],
              hookspath=[],
-             runtime_hooks=['usb.backend.libusb0'],
+             runtime_hooks=[],
              excludes=[],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
@@ -21,7 +21,7 @@ a = Analysis(['candymain.py'],
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 
-
+import sys
 # Generate an executable file for windows / linux
 if sys.platform == 'win32' or sys.platform == 'win64' or sys.platform == 'linux':
     exe = EXE(pyz,
