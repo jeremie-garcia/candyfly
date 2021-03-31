@@ -108,7 +108,7 @@ class CandyFly(QApplication):
         self.candyWin.populate_presets(self.presets_path)
 
         self.set_icon()
-        #self.candyWin.display_processed_inputs(0,0,0,0)
+        #self.candyWin.display_processed_inputs(0,0,1,0)
         sys.exit(self.exec_())
 
     def update_discrete_threshold(self, _threshold):

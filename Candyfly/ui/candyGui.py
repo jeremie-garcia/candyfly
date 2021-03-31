@@ -187,16 +187,36 @@ class SoundPlayer():
         self.down = QSoundEffect()
         self.down.setSource(QUrl.fromLocalFile('./sounds/down.wav'))
         self.down.setLoopCount(QSoundEffect.Infinite)
+        self.front = QSoundEffect()
+        self.front.setSource(QUrl.fromLocalFile('./sounds/front.wav'))
+        self.front.setLoopCount(QSoundEffect.Infinite)
+        self.back = QSoundEffect()
+        self.back.setSource(QUrl.fromLocalFile('./sounds/back.wav'))
+        self.back.setLoopCount(QSoundEffect.Infinite)
+        self.clock = QSoundEffect()
+        self.clock.setSource(QUrl.fromLocalFile('./sounds/clock.wav'))
+        self.clock.setLoopCount(QSoundEffect.Infinite)
+        self.a_clock = QSoundEffect()
+        self.a_clock.setSource(QUrl.fromLocalFile('./sounds/a_clock.wav'))
+        self.a_clock.setLoopCount(QSoundEffect.Infinite)
 
         self.right.setVolume(0)
         self.left.setVolume(0)
         self.up.setVolume(0)
         self.down.setVolume(0)
+        self.front.setVolume(0)
+        self.back.setVolume(0)
+        self.clock.setVolume(0)
+        self.a_clock.setVolume(0)
 
         self.right.play()
         self.left.play()
         self.up.play()
         self.down.play()
+        self.front.play()
+        self.back.play()
+        self.clock.play()
+        self.a_clock.play()
 
     def update(self, _up, _rotate, _front, _right):
         if _up >= 0:
@@ -212,6 +232,20 @@ class SoundPlayer():
         elif _right <= 0:
             self.left.setVolume(-_right)
             self.right.setVolume(0)
+
+        if _rotate >= 0:
+            self.clock.setVolume(_rotate)
+            self.a_clock.setVolume(0)
+        elif _up <= 0:
+            self.clock.setVolume(0)
+            self.a_clock.setVolume(-_rotate)
+
+        if _front >= 0:
+            self.front.setVolume(_front)
+            self.back.setVolume(0)
+        elif _right <= 0:
+            self.back.setVolume(-_front)
+            self.front.setVolume(0)
 
         #print("sounds", self.right.volume(), self.left.volume(), self.up.volume(), self.down.volume())
 
