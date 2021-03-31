@@ -6,16 +6,30 @@ from serial.tools.list_ports import comports
 
 
 def find_available_arduinos():
+    arduino_descriptions = ["arduino", "usb"]
+    arduino_devices = ["usb", "tty", "arduino"]
     arduino_ports = [
         p.device
         for p in comports(False)
-        if (("usb" or "tty" or "arduino") in str(p.device).lower()) or ("arduino" in str(p.description).lower())
+        if any(device in str(p.device).lower() for device in arduino_devices) or any(
+            description in str(p.description).lower() for description in arduino_descriptions)
     ]
     return arduino_ports
 
 
+DOWN_INDEX = 0
+UP_INDEX = 1
+ANTI_CLOCK_INDEX = 2
+CLOCK_INDEX = 3
+BACK_INDEX = 4
+FRONT_INDEX = 5
+LEFT_INDEX = 6
+RIGHT_INDEX = 7
+
+
 class ArduinoController(QObject):
     connection = pyqtSignal(bool)
+    # values are _up, _rotate, _front, _right
     sensors = pyqtSignal(float, float, float, float)
     clicked = pyqtSignal()
 
@@ -37,21 +51,21 @@ class ArduinoController(QObject):
 
     def readSerial(self):
         while self.alive:
-            #print('loop')
+            # print('loop')
             if self.arduino.isOpen():
-                #print('loop', 'arduino open')
+                # print('loop', 'arduino open')
                 try:
                     data = self.arduino.readline()[:-2]  # the last bit gets rid of the new-line chars
                     if data:
-                        try :
+                        try:
                             data_string = data.decode("utf8")
                             datas = data_string.split()
-                            #print('arduino datas', datas)
+                            # print('arduino datas', datas)
                             if len(datas) == 9:
-                                self.sensorsValues[0] = (int(datas[1]) - int(datas[0])) / 1024
-                                self.sensorsValues[1] = (int(datas[3]) - int(datas[2])) / 1024
-                                self.sensorsValues[2] = (int(datas[5]) - int(datas[4])) / 1024
-                                self.sensorsValues[3] = (int(datas[7]) - int(datas[6])) / 1024
+                                self.sensorsValues[0] = (int(datas[UP_INDEX]) - int(datas[DOWN_INDEX])) / 1024
+                                self.sensorsValues[1] = (int(datas[CLOCK_INDEX]) - int(datas[ANTI_CLOCK_INDEX])) / 1024
+                                self.sensorsValues[2] = (int(datas[FRONT_INDEX]) - int(datas[BACK_INDEX])) / 1024
+                                self.sensorsValues[3] = (int(datas[RIGHT_INDEX]) - int(datas[LEFT_INDEX])) / 1024
                                 button_value = int(datas[8])
                                 if self.buttonState == 1 and button_value == 0:
                                     self.clicked.emit()
