@@ -1,0 +1,50 @@
+{
+  "axes": [
+    true,
+    true,
+    true,
+    true
+  ],
+  "commentaires": "Réglages pour IHM avec table en carton\nTouche sensible\nTous les axes vitesse importantes\n",
+  "horizontal": 1.0,
+  "vertical": 0.72,
+  "rotation": 181,
+  "mode": "Arduino Continu",
+  "calibration": {
+    "up": [
+      0.1,
+      1.0
+    ],
+    "down": [
+      0.31,
+      0.96
+    ],
+    "clock": [
+      0.1,
+      1.0
+    ],
+    "anticlock": [
+      0.2,
+      1.0
+    ],
+    "front": [
+      0.1,
+      1.0
+    ],
+    "back": [
+      0.1,
+      1.0
+    ],
+    "right": [
+      0.1,
+      1.0
+    ],
+    "left": [
+      0.1,
+      1.0
+    ]
+  },
+  "discrete_threshold": 17,
+  "discrete_duration": 1000,
+  "drone_type": "Tello"
+}
