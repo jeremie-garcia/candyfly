@@ -6,6 +6,7 @@ from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QFileDialog, QAction
 
+from FrSky import find_available_frsky_ids, FrSky
 from arduino.arduino import find_available_arduinos, ArduinoController
 from drones.ardrone import ARDrone
 from drones.crazydrone import find_available_drones, CrazyDrone
@@ -97,7 +98,7 @@ class CandyFly(QApplication):
         self.candyWin.control_changed.connect(self.update_control_mode)
         self.candyWin.drone_changed.connect(self.init_drone_connection)
         # init resources
-        self.init_arduino()
+        #self.init_arduino()
         self.init_drone_connection()
 
         # init values to default
@@ -111,6 +112,21 @@ class CandyFly(QApplication):
 
 
         self.set_icon()
+
+        def value_updated(x,y,x2,y2):
+            self.process_arduino_sensors(x2, y, y2,x)
+
+        stream = False
+        refresh_duration_in_millis = 50
+        joysticks = find_available_frsky_ids()
+        print(joysticks)
+        if (len(joysticks) > 0):
+            gamepad = FrSky(stream, refresh_duration_in_millis, joysticks[0])
+            gamepad.values.connect(value_updated)
+            gamepad.start()
+            self.aboutToQuit.connect(gamepad.stop)
+
+        #self.candyWin.display_processed_inputs(0,0,1,0)
         sys.exit(self.exec_())
 
     def update_discrete_threshold(self, _threshold):
