@@ -250,7 +250,7 @@ class SoundPlayer():
         #print("sounds", self.right.volume(), self.left.volume(), self.up.volume(), self.down.volume())
 
 class CandyWinForm(QMainWindow):
-@    refreshDroneAsked = pyqtSignal()
+    refreshDroneAsked = pyqtSignal()
     refreshArduinoAsked = pyqtSignal()
     refreshRiotAsked = pyqtSignal()
 

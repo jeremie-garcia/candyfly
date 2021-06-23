@@ -6,6 +6,7 @@ from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QFileDialog, QAction
 
+from FrSky import find_available_frsky_ids, FrSky
 from arduino.arduino import find_available_arduinos, ArduinoController
 from drones.tello import TelloDrone
 from ui.candyGui import CandyWinForm
@@ -108,7 +109,8 @@ class CandyFly(QApplication):
         self.candyWin.populate_presets(self.presets_path)
 
         self.set_icon()
-        #self.candyWin.display_processed_inputs(0,0,1,0)
+        #self.candyWin.display_processed_inputs(0,0,0,0)
+
         sys.exit(self.exec_())
 
     def update_discrete_threshold(self, _threshold):
@@ -305,18 +307,18 @@ class CandyFly(QApplication):
                 self.take_off()
 
     def init_arduino(self):
-        if self.arduino:
-            self.arduino.connection.disconnect()
-            self.arduino.stop()
+        def value_updated(x, y, x2, y2):
+            self.process_arduino_sensors(x2, y, y2, x)
 
-        available = find_available_arduinos()
-        if len(available) > 0:
-            self.arduino = ArduinoController(available[0])
-            self.arduino.connection.connect(self.candyWin.update_arduino_connection)
-            self.process_arduino_sensors(0, 0, 0, 0)
-            self.arduino.start()
-        else:
-            self.arduino = None
+        stream = False
+        refresh_duration_in_millis = 50
+        joysticks = find_available_frsky_ids()
+        print(joysticks)
+        if (len(joysticks) > 0):
+            gamepad = FrSky(stream, refresh_duration_in_millis, joysticks[0])
+            gamepad.values.connect(value_updated)
+            gamepad.start()
+            self.aboutToQuit.connect(gamepad.stop)
 
     def update_calibration(self):
         calib = self.candyWin.get_calibration()
