@@ -307,18 +307,18 @@ class CandyFly(QApplication):
                 self.take_off()
 
     def init_arduino(self):
-        def value_updated(x, y, x2, y2):
-            self.process_arduino_sensors(x2, y, y2, x)
+        if self.arduino:
+            self.arduino.connection.disconnect()
+            self.arduino.stop()
 
-        stream = False
-        refresh_duration_in_millis = 50
-        joysticks = find_available_frsky_ids()
-        print(joysticks)
-        if (len(joysticks) > 0):
-            gamepad = FrSky(stream, refresh_duration_in_millis, joysticks[0])
-            gamepad.values.connect(value_updated)
-            gamepad.start()
-            self.aboutToQuit.connect(gamepad.stop)
+        available = find_available_arduinos()
+        if len(available) > 0:
+            self.arduino = ArduinoController(available[0])
+            self.arduino.connection.connect(self.candyWin.update_arduino_connection)
+            self.process_arduino_sensors(0, 0, 0, 0)
+            self.arduino.start()
+        else:
+            self.arduino = None
 
     def update_calibration(self):
         calib = self.candyWin.get_calibration()
