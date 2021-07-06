@@ -8,3 +8,7 @@ pygame
 pyqt5
 pyserial
 cflib
+openCv
+os
+
+version audio et gestuelle
