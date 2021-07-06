@@ -12,6 +12,8 @@ class Drone(QObject):
     connection = pyqtSignal(str) #value: 'on', 'off'
     batteryValue = pyqtSignal(float) #value: 'between 0 and 100'
     is_flying_signal = pyqtSignal(bool) #True or False
+    battery_low_signal = pyqtSignal(str) #integer convert into string for output
+    text_signal_1 = pyqtSignal(str)  # emit "text" recognized but computer
 
     def __init__(self):
         super().__init__()

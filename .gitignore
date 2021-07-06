@@ -131,3 +131,7 @@ dmypy.json
 .idea/*
 
 */cache/*
+
+
+/Candyfly/drones/model/*
+.DS_Store
