@@ -1,171 +1,213 @@
-from threading import Thread
 from PyQt5.QtWidgets import QApplication, QPushButton
-import vosk
-import argparse
 import os
-import queue
-import sounddevice as sd
 import sys
 import tello
+import list_commands
 
 DECOLLAGE = "décollage"
-
+BATTERIE = "batterie"
+ATTERRISSAGE = "atterrissage"
+ALTITUDE = "altitude"
+MERCI = "merci"
+ALLER = "aller"
+MONTER = "monter"
+FLIP = "flip"
+DESCENDRE = "descendre"
+GAUCHE = "gauche"
+DROITE = "droite"
+STOP = "stop"
+COUPER = "coupez"
+CLOCKWISE = "clockwise"
+C_CLOCKWISE = "counter_clockwise"
+AVANCER = "avancer"
+RECULER = "reculer"
 
 class TelloVoice(tello.TelloDrone):
-
     """classe responsable du contrôle vocal"""
     def __init__(self):
         tello.TelloDrone.__init__(self)
         #list des commandes porbable
-        self.decollage_list = ["décollage","déollage","décolle","l'ouvrage","d'école","décollez","d'accord","toi","paul","vol","terasse","décoller","collège","nicolas","deco","désolé","désolée","l'épauler","collègiens","coulées","bébé","les","volets","dévoilé","dévoilée","douleur","voilet","poulet","épaulé","poète","togolais","débra","découvrez","dec","dès","collègues","nicolas","découverte","eco","des"]
-        self.atterissage_list = ["atterissage","attends","atterrissage","matrix","mathrix","matrice","atteris","interieur","intérieur","attends","ça","stop","descends","casse-toi","descendre","patère","terre","adieu","rien","puissant","acquérir"]
-        self.altitude_list = ["altitude","attitude","aptitude","l'attitude","article","hauteur","auteur","humm","hum","julie","joli","joli"]
-        self.batterie_list = ["batterie","bat","paris","Paris","battez","entrée","Papa","prix","varient","varie","vatican","après","patrick","s'entasse","pourcentage","il","ville","pile"]
-        self.merci_list = ["merci","beaucoup","thanks","trop","sympa"]
-        self.aller_list =["dépeche","vite","putain","merde","dépêche-toi","allez","bon"]
+        self.decollage_list = list_commands.decollage_list
+        self.atterissage_list = list_commands.atterissage_list
+        self.altitude_list = list_commands.altitude_list
+        self.batterie_list = list_commands.batterie_list
+        self.merci_list = list_commands.merci_list
+        self.aller_list = list_commands.aller_list
+        self.MONTER_list = list_commands.MONTER_list
+        self.DESCENDRE_list = list_commands.DESCENDRE_list
+        self.FLIP_list = list_commands.FLIP_list
+        self.GAUCHE_list = list_commands.GAUCHE_list
+        self.DROITE_list = list_commands.DROITE_list
+        self.AVANCE_list = list_commands.AVANCE_list
+        self.GO_UP_list = list_commands.GO_UP_list
+        self.GO_DOWN_list = list_commands.GO_DOWN_list
+        self.RECULE_list = list_commands.RECULE_list
+        self.AVANCE_list = list_commands.AVANCE_list
+        self.AVANCE_PRECIS_list = list_commands.ANANCE_PRECISE_list
+        self.STOP_list = list_commands.STOP_list
+        self.EMERGENCY_list = list_commands.EMERGENCY_list
 
-        #implementer l'ajout multi-process pour les threads
-        self.q = queue.Queue()
-
-        # thread for speech recognizing
-        self.reco_thread = Thread(target=self._process_reco_thread)
-        self.reco_thread.daemon = True
-        self.reco_thread.start()
-
-        self.text_signal_1.connect(lambda value:  self.process_voice_command(value))
+        #boolen for battery warning
+        self.boolean_battery = True
 
     def speak(self,str,rate):
         """entrer un string pour que l'assistant vocal le dit à voix haute"""
         os.system('say --rate=%d %s' %(rate,str))
 
-    """The next two are Offline require fonction"""
-    def int_or_str(self,text):
-        """fonction responsable des arguemnt parsing"""
+    def number_conversion(self,str):
         try:
-            return int(text)
-        except ValueError:
-            return text
-
-    def callback(self,indata, frames, time, status):
-        """Fonction appelé à chaque block d'itaration auditive."""
-        if status:
-            print(status, file=sys.stderr)
-        self.q.put(bytes(indata))
-
-    def _process_reco_thread(self):
-        self.parser = argparse.ArgumentParser(add_help=False)
-        self.parser.add_argument(
-            '-l', '--list-devices', action='store_true',
-            help='show list of audio devices and exit')
-        args, remaining = self.parser.parse_known_args()
-
-        if args.list_devices:
-            print(sd.query_devices())
-            self.parser.exit(0)
-        self.parser = argparse.ArgumentParser(
-            description=__doc__,
-            formatter_class=argparse.RawDescriptionHelpFormatter,
-            parents=[self.parser])
-        self.parser.add_argument(
-            '-f', '--filename', type=str, metavar='FILENAME',
-            help='audio file to store recording to')
-        self.parser.add_argument(
-            '-m', '--model', type=str, metavar='MODEL_PATH',
-            help='Path to the model')
-        self.parser.add_argument(
-            '-d', '--device', type=self.int_or_str,
-            help='input device (numeric ID or substring)')
-        self.parser.add_argument(
-            '-r', '--samplerate', type=int, help='sampling rate')
-        self.args = self.parser.parse_args(remaining)
-        self.fonction_necessaire()
-
-    def fonction_necessaire(self):
-        try:
-            if self.args.model is None:
-                self.args.model = "model"
-            if not os.path.exists(self.args.model):
-                self.parser.exit(0)
-            if self.args.samplerate is None:
-                device_info = sd.query_devices(self.args.device, 'input')
-                # soundfile considéré comme un int, sounddevice fourni un floattan normalement:
-                self.args.samplerate = int(device_info['default_samplerate'])
-            model = vosk.Model(self.args.model)
-            if self.args.filename:
-                dump_fn = open(self.args.filename, "wb")
-            else:
-                dump_fn = None
-            with sd.RawInputStream(samplerate=self.args.samplerate, blocksize=8000, device=self.args.device, dtype='int16',
-                                   channels=1, callback=self.callback):
-                print('#' * 40)
-                print('Appuyez sur  Ctrl+C pour arrêter')
-                print('#' * 40)
-
-                rec = vosk.KaldiRecognizer(model, self.args.samplerate)
-                while self.running:
-                        data = self.q.get()
-                        if rec.AcceptWaveform(data):
-                            try:
-                                #print([str(x).replace('"','') for x in rec.Result().split()[3:-1]])
-                                for mot in rec.Result().split()[3:-1]:
-                                    chaque_mot = mot.replace('"','')
-                                    print(chaque_mot)
-                                    self.text_signal_1.emit(str(chaque_mot))
-                            except:
-                                pass
-                        if dump_fn is not None:
-                            dump_fn.write(data)
-        except KeyboardInterrupt:
-            print('\nDone')
-            self.parser.exit(0)
-        except Exception as e:
-            self.parser.exit(type(e).__name__ + ': ' + str(e))
+            if str == "vingt":
+                return int(20)
+            elif str == "trente":
+                return int(30)
+            elif str == "quarante":
+                return int (40)
+            elif str == "cinquante":
+                return int(50)
+            elif str == "soixante":
+                return int(60)
+            elif str == "soixante-dix":
+                return int(70)
+            elif str == "quatre-vingts":
+                return int(80)
+            elif str == "quatre-vingt-dix":
+                return int(90)
+            elif str == "cent":
+                return int(100)
+        except:
+            pass
 
     def warning_batterie(self,value):
         """fonction de rappelle pour batterie"""
-        self.speak("il vous reste plus beaucoup de batterie")
+        if self.pourcentage_batterie < 20 and self.boolean_battery:
+            self.speak("il vous reste plus beaucoup de batterie",220)
+            self.boolean_battery =False
 
     def filtration_command(self,commands):
         """fonction qui identifie la commande """
+        print("Entendu : {}".format(commands))
         try:
             if commands in self.decollage_list:
                 return DECOLLAGE
             if commands in self.atterissage_list:
-                return  "atterrissage"
+                return  ATTERRISSAGE
             if commands in self.altitude_list:
-                return "altitude"
-            elif  commands in self.batterie_list:
-                return "batterie"
-            elif  commands in self.merci_list:
-                return "merci"
-            elif  commands in self.aller_list:
-                return "aller"
+                return ALTITUDE
+            elif commands in self.batterie_list:
+                return BATTERIE
+            elif commands in self.merci_list:
+                return MERCI
+            elif commands in self.aller_list:
+                return ALLER
+            elif commands in self.MONTER_list:
+                return MONTER
+            elif commands in self.FLIP_list:
+                return FLIP
+            elif commands in self.DESCENDRE_list:
+                return DESCENDRE
+            elif commands in self.GAUCHE_list:
+                return GAUCHE
+            elif commands in self.DROITE_list:
+                return DROITE
+            elif commands in self.AVANCE_list:
+                return AVANCER
+            elif commands in self.RECULE_list:
+                return RECULER
+            elif commands in self.STOP_list:
+                return STOP
+            elif commands in self.EMMERGENCY_list:
+                return COUPER
+            return "pas compris"
+        except:
+            pass
+
+    def filtration_command_valeur(self,commands):
+        """fonction qui identifie la commande sachant les valeurs"""
+        try:
+            if commands in self.GO_UP_list:
+                return MONTER
+            elif commands in self.GO_DOWN_list:
+                return DESCENDRE
+            elif commands in self.DROITE_list:
+                return DROITE
+            elif commands in self.GAUCHE_list:
+                return GAUCHE
+            elif commands in self.AVANCE_PRECIS_list:
+                return AVANCER
+            elif commands in self.RECULE_list:
+                return RECULER
+            elif commands in list_commands.CLOCKWISE_list:
+                return CLOCKWISE
+            elif commands in list_commands.CLOCKWISE_list:
+                return C_CLOCKWISE
+            return "pas compris"
         except:
             pass
 
     def process_voice_command(self, commands):
         """fonction action """
         mess =str(self.filtration_command(commands))
-        print(mess)
+        print("CMD retenu = ",mess)
         if (mess == DECOLLAGE):
             self.take_off()
-        if(mess == "batterie"):
-            #print("batterie okay")
+        if(mess == BATTERIE):
             self.speak("La batterie est de {} pourcent".format(self.pourcentage_batterie), 200)
-        elif (mess == "atterrissage"):
+        elif (mess == ATTERRISSAGE):
             self.land()
-        elif (mess=="altitude"):
+        elif (mess==ALTITUDE):
             self.case_altitude = self.state_response.split(";")[9]
             self.value_altitude = self.case_altitude.split(":")[1]
             self.speak("Laltitude est de {} centimètre".format(int(self.value_altitude)),200)
-        elif (mess == "merci"):
-            #print("merci = entendu")
+        elif (mess == MERCI):
             self.speak("tinqiète bogoss",280)
-        elif (mess == "aller"):
-            # print("merci = entendu")
+        elif (mess == ALLER):
             self.speak("t'énerve pas s'il te plait",290)
+        elif (mess == FLIP):
+            self.send_command("flip b")
+        elif (mess == DESCENDRE):
+            self.send_command("down 30")
+        elif (mess == MONTER):
+            self.send_command("up 30")
+        elif (mess == GAUCHE):
+            self.send_command("right 30")
+        elif (mess == DROITE):
+            self.send_command("left 30")
+        elif (mess==AVANCER):
+            self.send_command("forward 30")
+        elif (mess==RECULER):
+            self.send_command("back 30")
+        elif (mess == STOP):
+            self.send_command("stop")
+        elif (mess == COUPER):
+            self.send_command("emergency")
         else:
            print("Je ne connais pas cette commande", mess)
+
+    def process_motion_command(self,commands,valeur):
+        """fonction proccess with accurate commands"""
+        mess = str(self.filtration_command_valeur(commands))
+        print(f'CMD = {mess} : valeur = {valeur}')
+        if (mess == GAUCHE):
+            self.left_by_cm(int(valeur))
+            print("okayyyy")
+        elif (mess == DROITE):
+            self.right_by_cm(int(valeur))
+            print("okayyyy")
+        elif (mess==MONTER):
+            self.up_by_cm(int(valeur))
+        elif (mess == DESCENDRE):
+            self.down_by_cmd(int(valeur))
+        elif (mess==AVANCER):
+            self.forward_by_cm(int(valeur))
+        elif (mess==RECULER):
+            self.back_by_cm(int(valeur))
+        elif (mess==CLOCKWISE):
+            self.CLW_by_cm(int(valeur))
+        elif (mess==C_CLOCKWISE):
+            self.C_CLW_by_cm(int(valeur))
+        else:
+            print("Je ne connais pas cette commande",mess)
+
 
 
 if __name__ == "__main__":

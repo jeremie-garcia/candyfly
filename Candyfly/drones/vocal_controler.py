@@ -68,7 +68,7 @@ class B(A):
 
 
 class professeur(B):
-    valeur = pyqtSignal(bool)
+    valeur = pyqtSignal(str,str)
     def __init__(self):
         B.__init__(self)
         self.age = 20
@@ -81,10 +81,10 @@ class professeur(B):
         self.engine.setProperty('voice', self.voices[38].id)
 
     def prevenir(self):
-        self.valeur.emit(True)
+        self.valeur.emit("bonjour","aurevoir")
 
-    def handle(self,value):
-        print("trigger",value)
+    def handle(self,str1,str2):
+        print("trigger",str1,str2)
 
     # def speak(self,str):
     #     """entrer un string pour que l'assistant vocal le dit à voix haute"""
@@ -97,6 +97,12 @@ class professeur(B):
         """entrer un string pour que l'assistant vocal le dit à voix haute"""
         print(2)
 
+    def affichage(self):
+        print("bonjour",type("bonjour"),False)
+
+
+
+
 if __name__=='__main__':
     a="bonjour"
     professeur().prevenir()
@@ -106,6 +112,7 @@ if __name__=='__main__':
 
     # professeur().speak("bonjour")
     print(type({"bonjou":2}))
+
 
 
     

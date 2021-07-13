@@ -11,4 +11,4 @@ cflib
 openCv
 os
 
-version audio et gestuelle
+pour l'utiliser il faut installer le dossier model

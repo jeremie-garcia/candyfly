@@ -88,13 +88,56 @@ class TelloDrone(Drone):
         self.state_sock.close()
         self.cmd_sock.close()
 
+    def up_by_cm(self, cm):
+        #test cm between 20 and 500
+        cm = min(500, max(20,cm))
+        cmd = f"up {cm}"
+        self.send_command(cmd)
+
+    def down_by_cmd(self,cm):
+        cm = min(500, max(20, cm))
+        cmd = f"down {cm}"
+        self.send_command(cmd)
+
+    def left_by_cm(self, cm):
+        #test cm between 20 and 500
+        cm = min(500, max(20,cm))
+        cmd = f"right {cm}"
+        self.send_command(cmd)
+
+    def right_by_cm(self, cm : int):
+        cm = min(500, max(20, cm))
+        cmd = f"left {cm}"
+        self.send_command(cmd)
+
+    def forward_by_cm(self,cm:int):
+        cm = min(500, max(20, cm))
+        cmd = f"forward {cm}"
+        self.send_command(cmd)
+
+    def back_by_cm(self,cm:int):
+        cm = min(500,max(20,cm))
+        cmd = f"back {cm}"
+        self.send_command(cmd)
+
+    def CLW_by_cm(self,cm:int):
+        cm = min(500,max(20,cm))
+        cmd = f"cw {cm}"
+        self.send_command(cmd)
+
+    def C_CLW_by_cm(self,cm:int):
+        cm = min(500,max(20,cm))
+        cmd = f"ccw {cm}"
+        self.send_command(cmd)
+
+
+
     def int_or_str(self,text):
         """fonction responsable des arguemnt parsing"""
         try:
             return int(text)
         except ValueError:
             return text
-
 
     def callback(self,indata, frames, time, status):
         """Fonction appelé à chaque block d'itaration auditive."""
@@ -141,9 +184,7 @@ class TelloDrone(Drone):
                 self.bat = re.search(r"bat:(\d*)", self.state_response).group()[4:]
                 self.batteryValue.emit(int(self.bat) * 0.043)  # hack...
                 self.pourcentage_batterie = int(((int(self.bat) * 0.043) / 4.35) * 100)
-                if self.pourcentage_batterie < 20:
-                    self.battery_low_signal.emit(str(self.pourcentage_batterie))
-                    break
+                self.battery_low_signal.emit(str(self.pourcentage_batterie))
             except socket.error as exc:
                 print("CMD ERROR: %s" % exc)
 
@@ -163,12 +204,6 @@ class TelloDrone(Drone):
             #print("TELLO:", cmd)
             self.cmd_state = "rc"
             self.send_command(cmd)
-
-    def up_by_cm(self, cm):
-        #test cm between 20 and 500
-        cm = min(500, max(20,cm))
-        cmd = f"up {cm}"
-        self.send_command(cmd)
 
 """
     def fonction_nec1(self):
