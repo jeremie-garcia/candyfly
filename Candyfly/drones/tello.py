@@ -108,6 +108,7 @@ class TelloDrone(Drone):
             try:
                 rep, ip = self.state_sock.recvfrom(1024)
                 self.state_response = rep.decode('utf8')
+                print(self.state_response)
                 bat = re.search(r"bat:(\d*)", self.state_response).group()[4:]
                 self.batteryValue.emit(int(bat) * 0.043)  # hack...
             except socket.error as exc:

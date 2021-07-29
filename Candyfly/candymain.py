@@ -333,6 +333,7 @@ class CandyFly(QApplication):
             self.drone.process_motion(0, 0, 0, 0)
 
         if 'Arduino' in _mode:
+            self.init_arduino()
             if self.arduino is not None:
                 self.arduino.start()
                 self.arduino.sensors.connect(self.process_arduino_sensors)
