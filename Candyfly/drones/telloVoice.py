@@ -1,12 +1,10 @@
 from PyQt5.QtWidgets import QApplication, QPushButton
-from PyQt5.QtCore import QTimer
 import os
 import sys
 import tello
 import list_commands
 import time
-import threading
-import asyncio
+
 
 DECOLLAGE = "décollage"
 BATTERIE = "batterie"
@@ -28,7 +26,7 @@ RECULER = "reculer"
 DETECTION_HUMAIN = "detection"
 
 class TelloVoice(tello.TelloDrone):
-    """classe responsable du contrôle vocal"""
+    """class for vocal control, it allows to filter the up coming signals """
     def __init__(self):
         tello.TelloDrone.__init__(self)
         #list des commandes porbable

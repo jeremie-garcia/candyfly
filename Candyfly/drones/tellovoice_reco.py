@@ -10,7 +10,7 @@ import telloVoice
 
 
 class TelloVoiceReco(telloVoice.TelloVoice):
-    """classe responsable du contrôle vocal"""
+    """classe responsable du contrôle vocal / This class will be use to recognize voices (french only)"""
     def __init__(self):
         telloVoice.TelloVoice.__init__(self)
 
@@ -100,7 +100,6 @@ class TelloVoiceReco(telloVoice.TelloVoice):
                                         self.chaque_mot = mot.replace('"', '')
                                         #print(self.chaque_mot)
                                         self.text_signal_1.emit(str(self.chaque_mot))
-
                                 else:
                                     self.value_2_int= self.number_conversion(str(self.entendu_phrase.split()[-2]))
                                     self.text_signal_2.emit(str(self.entendu_phrase),str(self.value_2_int))

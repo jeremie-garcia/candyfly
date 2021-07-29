@@ -13,7 +13,8 @@ PATH = "/Users/alaintai/Desktop/Candyfly/Candyfly/image_dection"
 PATH_data_face = "/Users/alaintai/Desktop/Candyfly/Candyfly/data_face/data_face_frontal.xml"
 
 class telloVoiceObjectReco(tellovoice_reco.TelloVoiceReco):
-    """classe responsable de la reconnaissance de visage pour quelques metres"""
+    """classe responsable de la reconnaissance de visage pour quelques metres/
+    Class that allows you to make to stream on with the camera, and make facial recognition"""
     def __init__(self):
         tellovoice_reco.TelloVoiceReco.__init__(self)
 
@@ -52,7 +53,6 @@ class telloVoiceObjectReco(tellovoice_reco.TelloVoiceReco):
                 cv2.imshow('frame', frame)
                 #print("oui")
                 if cv2.waitKey(1) & 0xFF == ord('q'):
-                    #self.capture.release()
                     cv2.destroyAllWindows()
                     self.streaming_sock.sendto('streamoff'.encode(' utf-8 '), self.tello_address)
                 elif cv2.waitKey(1) & 0xFF == ord('c'):  # save on pressing 'c'
@@ -74,7 +74,7 @@ class telloVoiceObjectReco(tellovoice_reco.TelloVoiceReco):
                         1.0, (0, 255, 0), thickness=2)
         cv2.imwrite(PATH + '/c1.png', img)
         cv2.imshow("Detection facial", img)
-        self.speak("il y a {} personnes".format(human_counter),240)
+        self.speak("il y a {} visage".format(human_counter),240)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             self.capture.release()
             cv2.destroyAllWindows()

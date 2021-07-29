@@ -4,8 +4,6 @@ from threading import Thread
 from PyQt5.QtWidgets import QApplication, QPushButton
 from drone import Drone
 import queue
-import time
-import cv2
 
 import sys
 INTERVAL = 1

@@ -36,7 +36,7 @@ DROITE_list = ["droite", "noir", "va à droite", "a droite encore",
                "bas à droite de cinquante cm","va à droite de cinquante centimes","va à droite de deux mètres","allez à droite de deux mètres","va à droite de trois mètres","allez à droite de trois mètres",
                "vingt droite de trois mètres","vingt à droite de deux mètres"]
 
-AVANCE_list = ["avance encore","avancez","avance","a avance"," avant","tout droit","tous droits"]
+AVANCE_list = ["avance encore","avancez","avance","a avance"," avant","tout droit","tous droits","avant"]
 
 ANANCE_PRECISE_list = ["avance de quarante cm","avance de cinquante cm","avance de soixante cm","avance de soixante-dix cm",
                       "a vence de quatre-vingts cm","avance de quatre-vingts cm","a vence de quatre-vingt-dix cm","avance de quatre-vingt-dix cm","avance de deux mètres","avancez de deux mètres","tournoi","avance de trois mètres","avancez de trois mètres"]
