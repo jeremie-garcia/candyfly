@@ -15,6 +15,7 @@ class Drone(QObject):
     battery_low_signal = pyqtSignal(str) #integer convert into string for output
     text_signal_1 = pyqtSignal(str)  # emit "text" recognized but computer
     text_signal_2 = pyqtSignal(str,str)  # emit "text" recognized but computer
+    detection_signal = pyqtSignal(int) #emit a string when the drone comme back from a detection mission
 
     def __init__(self):
         super().__init__()

@@ -1,8 +1,12 @@
 from PyQt5.QtWidgets import QApplication, QPushButton
+from PyQt5.QtCore import QTimer
 import os
 import sys
 import tello
 import list_commands
+import time
+import threading
+import asyncio
 
 DECOLLAGE = "décollage"
 BATTERIE = "batterie"
@@ -21,6 +25,7 @@ CLOCKWISE = "clockwise"
 C_CLOCKWISE = "counter_clockwise"
 AVANCER = "avancer"
 RECULER = "reculer"
+DETECTION_HUMAIN = "detection"
 
 class TelloVoice(tello.TelloDrone):
     """classe responsable du contrôle vocal"""
@@ -46,9 +51,12 @@ class TelloVoice(tello.TelloDrone):
         self.AVANCE_PRECIS_list = list_commands.ANANCE_PRECISE_list
         self.STOP_list = list_commands.STOP_list
         self.EMERGENCY_list = list_commands.EMERGENCY_list
+        self.DETECTION_list = list_commands.DETECTION_list
 
         #boolen for battery warning
         self.boolean_battery = True
+
+        self.valeur_aller = 200 #valeur initialisée par défaut en absence de commande
 
     def speak(self,str,rate):
         """entrer un string pour que l'assistant vocal le dit à voix haute"""
@@ -62,8 +70,14 @@ class TelloVoice(tello.TelloDrone):
                 return int(30)
             elif str == "quarante":
                 return int (40)
+            elif str == "trois":
+                return int(300)
+            elif str == "quatre":
+                return int(400)
             elif str == "cinquante":
                 return int(50)
+            elif str == "cinq":
+                return int(500)
             elif str == "soixante":
                 return int(60)
             elif str == "soixante-dix":
@@ -72,8 +86,10 @@ class TelloVoice(tello.TelloDrone):
                 return int(80)
             elif str == "quatre-vingt-dix":
                 return int(90)
-            elif str == "cent":
+            elif str == "cent" or "un":
                 return int(100)
+            elif str == "deux-cents" or "deux":
+                return int(200)
         except:
             pass
 
@@ -132,6 +148,8 @@ class TelloVoice(tello.TelloDrone):
                 return DROITE
             elif commands in self.GAUCHE_list:
                 return GAUCHE
+            elif commands in self.DETECTION_list:
+                return DETECTION_HUMAIN
             elif commands in self.AVANCE_PRECIS_list:
                 return AVANCER
             elif commands in self.RECULE_list:
@@ -169,9 +187,9 @@ class TelloVoice(tello.TelloDrone):
         elif (mess == MONTER):
             self.send_command("up 30")
         elif (mess == GAUCHE):
-            self.send_command("right 30")
-        elif (mess == DROITE):
             self.send_command("left 30")
+        elif (mess == DROITE):
+            self.send_command("right 30")
         elif (mess==AVANCER):
             self.send_command("forward 30")
         elif (mess==RECULER):
@@ -197,6 +215,8 @@ class TelloVoice(tello.TelloDrone):
             self.up_by_cm(int(valeur))
         elif (mess == DESCENDRE):
             self.down_by_cmd(int(valeur))
+        elif (mess == DETECTION_HUMAIN):
+            self.detection_action(int(valeur))
         elif (mess==AVANCER):
             self.forward_by_cm(int(valeur))
         elif (mess==RECULER):
@@ -208,7 +228,24 @@ class TelloVoice(tello.TelloDrone):
         else:
             print("Je ne connais pas cette commande",mess)
 
+    def detection_action(self, valeur):
+        """fonction that allows you to detecte human in a few metre towards you"""
+        self.chemin_aller(int(valeur))
+        self.valeur_aller = valeur
 
+    def chemin_retour(self,valeur = 200):
+        print("la distance parcourue est : ",valeur)
+        self.CLW_by_cm(int(180))
+        print("je reviens")
+        time.sleep(5)
+        self.forward_by_cm(int(self.valeur_aller) + 50)
+        print("je suis revenu")
+        time.sleep(8)
+        self.CLW_by_cm(int(180))
+
+    def chemin_aller(self, valeur:int):
+        self.forward_by_cm(int(valeur))
+        print("j'y vais")
 
 if __name__ == "__main__":
     app = QApplication([])

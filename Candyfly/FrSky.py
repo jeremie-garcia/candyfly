@@ -16,7 +16,6 @@ def find_available_frsky_ids():
     for i in range(joystick.get_count()):
         print(joystick.Joystick(i).get_name().lower())
 
-
     frsky_ids = [
             i
             for i in range(joystick.get_count())

@@ -95,33 +95,15 @@ class TelloVoiceReco(telloVoice.TelloVoice):
                             try:
                                 self.entendu_phrase = str(rec.Result().split(":")[1].replace("}","").replace('"','').strip())
                                 print(self.entendu_phrase)
-                                # self.value_2_int = self.number_conversion(str(entendu_phrase.split()[-2]))
-                                # print(self.number_conversion(str(entendu_phrase.split()[-2])))
-                                # print(str(entendu_phrase),str(self.value_2_int)
-                                #print(len(self.entendu_phrase.split()))
-                                if len(self.entendu_phrase.split()) <=3:
+                                if len(self.entendu_phrase.split()) <= 3:
                                     for mot in self.entendu_phrase.split():
                                         self.chaque_mot = mot.replace('"', '')
                                         #print(self.chaque_mot)
                                         self.text_signal_1.emit(str(self.chaque_mot))
+
                                 else:
                                     self.value_2_int= self.number_conversion(str(self.entendu_phrase.split()[-2]))
-                                    #print(self.value_2_int)
-                                    #print(type(self.value_2_int))
                                     self.text_signal_2.emit(str(self.entendu_phrase),str(self.value_2_int))
-                                # else:
-                                #     print("enfin")
-                                #     for mot in rec.Result().split()[3:-1]:
-                                #         self.chaque_mot = mot.replace('"', '')
-                                #         print(self.chaque_mot)
-                                #         self.text_signal_1.emit(str(self.chaque_mot))
-                                #print(type(rec.Result().split(":")[1].replace("}","")))
-                                """
-                                for mot in rec.Result().split()[3:-1]:
-                                    chaque_mot = mot.replace('"','')
-                                    print(chaque_mot)
-                                    self.text_signal_1.emit(str(chaque_mot))
-                                    """
                             except:
                                 pass
                         if dump_fn is not None:
@@ -133,7 +115,7 @@ class TelloVoiceReco(telloVoice.TelloVoice):
             self.parser.exit(type(e).__name__ + ': ' + str(e))
 
     def warning_batterie(self,value):
-        """fonction de rappelle pour batterie"""
+        """fonction de rappelle pour batterie quand elle est en dessous de 20%"""
         if self.pourcentage_batterie < 20 and self.boolean_battery:
             self.speak("il vous reste plus beaucoup de batterie",220)
             self.boolean_battery =False
